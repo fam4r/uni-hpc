@@ -1,0 +1,59 @@
+% Fabrizio Margotta 789072
+% Alma Mater Studiorum - Università di Bologna
+
+\documentclass[a4paper]{article}
+
+% \usepackage[toc,page]{appendix}
+\usepackage[bookmarks]{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{minted}
+\usepackage[nottoc]{tocbibind}
+\graphicspath{{./img/}}
+
+\hypersetup{
+    pdftitle={Relazione del progetto di HPC},
+    pdfauthor={Fabrizio Margotta},
+    pdfkeywords={hpc, openmp, cuda}
+}
+
+\begin{document}
+
+\title{Relazione del progetto di HPC\\
+     Corso di High Performance Computing}
+\author{Fabrizio Margotta
+(\href{mailto:fabrizio.margotta@studio.unibo.it}{fabrizio.margotta@studio.unibo.it})\\
+	\\
+  Alma Mater Studiorum - Università di Bologna\\}
+% \subtitle{Programmazione di Reti - Progetto di gruppo}
+\date{2019-02-28}
+
+\maketitle \thispagestyle{empty}
+\input{./tex/abstract.tex}
+\newpage \thispagestyle{empty}
+\begin{center}
+[Questa pagina è stata lasciata intenzionalmente bianca.]
+\end{center}
+\newpage
+\setcounter{tocdepth}{2} % Show sections
+\tableofcontents \thispagestyle{empty}
+\newpage
+
+\pagestyle{headings}
+
+\input{./tex/analisi.tex}
+%\newpage
+\input{./tex/design.tex}
+%\newpage
+\input{./tex/sviluppo.tex}
+%\newpage
+\input{./tex/conclusioni.tex}
+\newpage 
+\appendix 
+\input{./tex/appendice.tex}
+\newpage
+\bibliographystyle{plain}
+\bibliography{./tex/bibliografia}
+%\input{./tex/bibliografia.tex}
+
+\end{document}
