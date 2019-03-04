@@ -104,10 +104,18 @@ void setup( float* grid, int n, float fmin, float fmax )
  */
 void increment_energy( float *grid, int n, float delta )
 {
-    int i, j;
-#pragma omp parallel for default(none) shared(i,j,n,grid,delta)
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    /*
+     * valutare schedule auto
+     * segnalare schedule dynamic come molto più lento
+     */
+    /*
+#pragma omp parallel for default(none) firstprivate(count,delta) shared(grid)
+    for (i = 0; i < count; i++){
+        grid[i] += delta;
+    }*/
+#pragma omp parallel for default(none) firstprivate(n,delta) shared(grid) collapse(2)
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
             *IDX(grid, i, j, n) += delta;
         }
     }
@@ -120,6 +128,7 @@ void increment_energy( float *grid, int n, float delta )
 int count_cells( float *grid, int n )
 {
     int c = 0;
+#pragma omp parallel for default(none) firstprivate(n,grid) reduction(+:c)
     for (int i=0; i<n; i++) {
         for (int j=0; j<n; j++) {
             if ( *IDX(grid, i, j, n) > EMAX ) { c++; }
