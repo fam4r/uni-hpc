@@ -146,6 +146,7 @@ int count_cells( float *grid, int n )
 void propagate_energy( float *cur, float *next, int n )
 {
     const float FDELTA = EMAX/4;
+#pragma omp parallel for default(none) firstprivate(n,cur) shared(next)
     for (int i=0; i<n; i++) {
         for (int j=0; j<n; j++) {
             float F = *IDX(cur, i, j, n);
@@ -183,6 +184,7 @@ void propagate_energy( float *cur, float *next, int n )
 float average_energy(float *grid, int n)
 {
     float sum = 0.0f;
+#pragma omp parallel for default(none) firstprivate(n,grid) reduction(+:sum)
     for (int i=0; i<n; i++) {
         for (int j=0; j<n; j++) {
             sum += *IDX(grid, i, j, n);
