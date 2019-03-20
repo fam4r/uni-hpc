@@ -58,6 +58,8 @@
 #define EMAX 4.0f
 /* energia da aggiungere ad ogni timestep */
 #define EDELTA 1e-4
+/* dimensione halo */
+#define HALO 1
 
 /**
  * Restituisce un puntatore all'elemento di coordinate (i,j) del
@@ -90,11 +92,37 @@ float randab( float a, float b )
  */
 void setup( float* grid, int n, float fmin, float fmax )
 {
-    for ( int i=0; i<n; i++ ) {
-        for ( int j=0; j<n; j++ ) {
+    for (int i = 0; i < n * n; i++ ){
+        grid[i] = randab(fmin, fmax);
+    }
+    /*
+    for (int i = HALO; i < n + HALO; i++ ) {
+        for ( int j = HALO; j < n + HALO; j++ ) {
             *IDX(grid, i, j, n) = randab(fmin, fmax);
         }
     }
+
+    FARE CON DEI FOR PERCHE HALO PUO ESSERE ANCHE > 1
+    SOPRA E SOTTO
+    i = 0;
+    for (int j = 0 ; j <= n + HALO; j++) {
+        *IDX(grid, i, j, n) = 0.0;
+    }
+    i = n + HALO;
+    for (int j = 0 ; j <= n + HALO; j++) {
+        *IDX(grid, i, j, n) = 0.0;
+    }
+
+    DESTRA E SINISTRA
+    j = 0;
+    for (int i = 0 ; i <= n + HALO; i++) {
+        *IDX(grid, i, j, n) = 0.0;
+    }
+    j = n + HALO;
+    for (int i = 0 ; i <= n + HALO; i++) {
+        *IDX(grid, i, j, n) = 0.0;
+    }
+    */
 }
 
 /**
@@ -104,20 +132,10 @@ void setup( float* grid, int n, float fmin, float fmax )
  */
 void increment_energy( float *grid, int n, float delta )
 {
-    /*
-     * valutare schedule auto
-     * segnalare schedule dynamic come molto più lento
-     */
-    /*
-#pragma omp parallel for default(none) firstprivate(count,delta) shared(grid)
-    for (i = 0; i < count; i++){
+    int count = n * n;
+#pragma omp parallel for default(none) shared(count,delta,grid)
+    for (int i = 0; i < count; i++){
         grid[i] += delta;
-    }*/
-#pragma omp parallel for default(none) firstprivate(n,delta) shared(grid) collapse(2)
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            *IDX(grid, i, j, n) += delta;
-        }
     }
 }
 
@@ -128,11 +146,10 @@ void increment_energy( float *grid, int n, float delta )
 int count_cells( float *grid, int n )
 {
     int c = 0;
-#pragma omp parallel for default(none) firstprivate(n,grid) reduction(+:c)
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            if ( *IDX(grid, i, j, n) > EMAX ) { c++; }
-        }
+    int count = n * n;
+#pragma omp parallel for default(none) shared(count,grid) reduction(+:c)
+    for (int i = 0; i < count; i++) {
+        if ( grid[i] > EMAX ) { c++; }
     }
     return c;
 }
@@ -146,7 +163,7 @@ int count_cells( float *grid, int n )
 void propagate_energy( float *cur, float *next, int n )
 {
     const float FDELTA = EMAX/4;
-#pragma omp parallel for default(none) firstprivate(n,cur) shared(next)
+#pragma omp parallel for default(none) shared(n,cur,next) collapse(2)
     for (int i=0; i<n; i++) {
         for (int j=0; j<n; j++) {
             float F = *IDX(cur, i, j, n);
@@ -162,6 +179,21 @@ void propagate_energy( float *cur, float *next, int n )
             if ((i>0) && (*IDX(cur, i-1, j, n) > EMAX)) { F += FDELTA; }
             /* Idem per il vicino in basso */
             if ((i<n-1) && (*IDX(cur, i+1, j, n) > EMAX)) { F += FDELTA; }
+            
+            /*
+             * CONCEPT PER HALO: non mi devo chidere se esiste il vicino di
+             * destra / sinistra
+             * MA devo far partire il ciclo da HALO e farlo terminare su n
+             */
+            /*
+            if (*IDX(cur, i, j-1, n) > EMAX || 
+                *IDX(cur, i, j+1, n) > EMAX ||
+                *IDX(cur, i-1, j, n) > EMAX ||
+                *IDX(cur, i+1, j, n) > EMAX)
+            { 
+                F += FDELTA;
+            }
+            */
 
             if (F > EMAX) {
                 F -= EMAX;
@@ -184,13 +216,12 @@ void propagate_energy( float *cur, float *next, int n )
 float average_energy(float *grid, int n)
 {
     float sum = 0.0f;
-#pragma omp parallel for default(none) firstprivate(n,grid) reduction(+:sum)
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            sum += *IDX(grid, i, j, n);
-        }
+    int count = n * n;
+#pragma omp parallel for default(none) shared(count,grid) reduction(+:sum)
+    for(int i = 0; i < count; i++) {
+        sum += grid[i];
     }
-    return (sum / (n*n));
+    return (sum / count);
 }
 
 int main( int argc, char* argv[] )
@@ -216,13 +247,18 @@ int main( int argc, char* argv[] )
     }
 
     const size_t size = n*n*sizeof(float);
+    /* const size_t size = (n + HALO) * (n + HALO) * sizeof(float); */
+
+    /* POI la gestione delle ghost cell avverrà internamente alle funzioni, a
+     * cui verrà passato normalmente n */
 
     /* Allochiamo i domini */
     cur = (float*)malloc(size); assert(cur);
     next = (float*)malloc(size); assert(next);
 
     /* L'energia iniziale di ciascuna cella e' scelta 
-       con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */       
+       con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */
+    /* L'inizializzazione delle ghost cell è gestita internamente */
     setup(cur, n, 0, EMAX*0.1);
     
     const double tstart = hpc_gettime();
