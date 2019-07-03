@@ -23,7 +23,6 @@ The report can be found in `./report/report-789072.pdf`.
 To run the code please execute the following instructions:
 
 ```
-# foo
 make clean
 make
 ./omp-earthquake # to run OpenMP implementation
