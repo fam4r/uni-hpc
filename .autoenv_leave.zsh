@@ -1,3 +1,4 @@
 unset -f sendomp
 unset -f sendcuda
-unset -f recvres
+unset -f recvomp
+unset -f recvcuda
