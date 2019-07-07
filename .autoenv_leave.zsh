@@ -1,4 +1,7 @@
 unset -f sendomp
-unset -f sendcuda
+unset -f computeomp
 unset -f recvomp
+unset -f runomp
+
+unset -f sendcuda
 unset -f recvcuda
