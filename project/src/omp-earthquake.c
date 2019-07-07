@@ -92,37 +92,32 @@ float randab( float a, float b )
  */
 void setup( float* grid, int n, float fmin, float fmax )
 {
-    for (int i = 0; i < n * n; i++ ){
-        grid[i] = randab(fmin, fmax);
-    }
-    /*
-    for (int i = HALO; i < n + HALO; i++ ) {
-        for ( int j = HALO; j < n + HALO; j++ ) {
+    int i = 0, j = 0;
+
+    /* Inizializzo la matrice reale (SENZA HALO) con i valori casuali */
+    for (i = HALO; i < n - HALO; i++ ) {
+        for ( int j = HALO; j < n - HALO; j++ ) {
             *IDX(grid, i, j, n) = randab(fmin, fmax);
         }
     }
 
-    FARE CON DEI FOR PERCHE HALO PUO ESSERE ANCHE > 1
-    SOPRA E SOTTO
-    i = 0;
-    for (int j = 0 ; j <= n + HALO; j++) {
-        *IDX(grid, i, j, n) = 0.0;
-    }
-    i = n + HALO;
-    for (int j = 0 ; j <= n + HALO; j++) {
-        *IDX(grid, i, j, n) = 0.0;
+    /*
+     * Note: assuming max HALO value = 1
+     * If HALO would be bigger, those loops need to be handled
+     * by external-looping other HALO layers (concept idea).
+     */
+
+    /* Fill matrix top and bottom with zeroes (HALO) */
+    for (j = 0 ; j < n; j++) {
+        *IDX(grid, 0, j, n) = 0.0; /* TOP */
+        *IDX(grid, n - HALO, j, n) = 0.0; /* BOTTOM */
     }
 
-    DESTRA E SINISTRA
-    j = 0;
-    for (int i = 0 ; i <= n + HALO; i++) {
-        *IDX(grid, i, j, n) = 0.0;
+    /* Fill matrix left and right with zeroes (HALO) */
+    for (i = 0 ; i < n; i++) {
+        *IDX(grid, i, 0, n) = 0.0; /* LEFT */
+        *IDX(grid, i, n - HALO, n) = 0.0; /* RIGHT */
     }
-    j = n + HALO;
-    for (int i = 0 ; i <= n + HALO; i++) {
-        *IDX(grid, i, j, n) = 0.0;
-    }
-    */
 }
 
 /**
@@ -132,10 +127,12 @@ void setup( float* grid, int n, float fmin, float fmax )
  */
 void increment_energy( float *grid, int n, float delta )
 {
-    int count = n * n;
-#pragma omp parallel for default(none) shared(count,delta,grid)
-    for (int i = 0; i < count; i++){
-        grid[i] += delta;
+    /* Only add delta for internal (NO HALO) matrix cells */
+#pragma omp parallel for default(none) shared(n,delta,grid)
+    for (int i = HALO; i < n - HALO; i++) {
+        for (int j = HALO; j < n - HALO; j++) {
+            *IDX(grid, i, j, n) += delta;
+        }
     }
 }
 
@@ -145,11 +142,15 @@ void increment_energy( float *grid, int n, float delta )
  */
 int count_cells( float *grid, int n )
 {
+    /* Looping the internal (NO HALO) matrix */
     int c = 0;
-    int count = n * n;
-#pragma omp parallel for default(none) shared(count,grid) reduction(+:c)
-    for (int i = 0; i < count; i++) {
-        if ( grid[i] > EMAX ) { c++; }
+#pragma omp parallel for default(none) shared(n,grid) reduction(+:c)
+    for (int i = HALO; i < n - HALO; i++) {
+        for (int j = HALO; j < n - HALO; j++) {
+            if ( *IDX(grid, i, j, n) > EMAX ) {
+                c++;
+            }
+        }
     }
     return c;
 }
@@ -164,36 +165,20 @@ void propagate_energy( float *cur, float *next, int n )
 {
     const float FDELTA = EMAX/4;
 #pragma omp parallel for default(none) shared(n,cur,next) collapse(2)
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
+    for (int i = HALO; i < n - HALO; i++) {
+        for (int j = HALO; j < n - HALO; j++) {
             float F = *IDX(cur, i, j, n);
             float *out = IDX(next, i, j, n);
 
             /* Se l'energia del vicino di sinistra (se esiste) e'
                maggiore di EMAX, allora la cella (i,j) ricevera'
                energia addizionale FDELTA = EMAX/4 */
-            if ((j>0) && (*IDX(cur, i, j-1, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino di destra */
-            if ((j<n-1) && (*IDX(cur, i, j+1, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino in alto */
-            if ((i>0) && (*IDX(cur, i-1, j, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino in basso */
-            if ((i<n-1) && (*IDX(cur, i+1, j, n) > EMAX)) { F += FDELTA; }
-            
-            /*
-             * CONCEPT PER HALO: non mi devo chidere se esiste il vicino di
-             * destra / sinistra
-             * MA devo far partire il ciclo da HALO e farlo terminare su n
-             */
-            /*
-            if (*IDX(cur, i, j-1, n) > EMAX || 
-                *IDX(cur, i, j+1, n) > EMAX ||
-                *IDX(cur, i-1, j, n) > EMAX ||
-                *IDX(cur, i+1, j, n) > EMAX)
-            { 
-                F += FDELTA;
-            }
-            */
+            /* Looking to all neighbors*/
+
+            if ((j > 0)     && (*IDX(cur, i, j - 1, n) > EMAX)) { F += FDELTA; }
+            if ((j < n - 1) && (*IDX(cur, i, j + 1, n) > EMAX)) { F += FDELTA; }
+            if ((i > 0)     && (*IDX(cur, i - 1, j, n) > EMAX)) { F += FDELTA; }
+            if ((i < n - 1) && (*IDX(cur, i + 1, j, n) > EMAX)) { F += FDELTA; }
 
             if (F > EMAX) {
                 F -= EMAX;
@@ -216,12 +201,15 @@ void propagate_energy( float *cur, float *next, int n )
 float average_energy(float *grid, int n)
 {
     float sum = 0.0f;
-    int count = n * n;
-#pragma omp parallel for default(none) shared(count,grid) reduction(+:sum)
-    for(int i = 0; i < count; i++) {
-        sum += grid[i];
+#pragma omp parallel for default(none) shared(n,grid) reduction(+:sum)
+    for (int i = HALO; i < n - HALO; i++) {
+        for (int j = HALO; j < n - HALO; j++) {
+            sum += *IDX(grid, i, j, n);
+        }
     }
-    return (sum / count);
+    return (sum / (n*n));
+
+
 }
 
 int main( int argc, char* argv[] )
@@ -232,7 +220,7 @@ int main( int argc, char* argv[] )
     int c;
 
     srand(19); /* Inizializzazione del generatore pseudocasuale */
-    
+
     if ( argc > 3 ) {
         fprintf(stderr, "Usage: %s [nsteps [n]]\n", argv[0]);
         return EXIT_FAILURE;
@@ -246,22 +234,23 @@ int main( int argc, char* argv[] )
         n = atoi(argv[2]);
     }
 
+    /* n (e size) è la dimensione COMPRESA di HALO */
+    n = n + (2 * HALO);
     const size_t size = n*n*sizeof(float);
-    /* const size_t size = (n + HALO) * (n + HALO) * sizeof(float); */
-
-    /* POI la gestione delle ghost cell avverrà internamente alle funzioni, a
-     * cui verrà passato normalmente n */
 
     /* Allochiamo i domini */
     cur = (float*)malloc(size); assert(cur);
     next = (float*)malloc(size); assert(next);
 
-    /* L'energia iniziale di ciascuna cella e' scelta 
+    /* L'energia iniziale di ciascuna cella e' scelta
        con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */
-    /* L'inizializzazione delle ghost cell è gestita internamente */
+    /* L'inizializzazione delle ghost cell a 0 è gestita internamente */
+    const double ts_start = hpc_gettime();
     setup(cur, n, 0, EMAX*0.1);
-    
-    const double tstart = hpc_gettime();
+    const double s_elapsed = hpc_gettime() - ts_start;
+    fprintf(stderr, "%s : %.8f seconds taken for serial portion\n", argv[0], s_elapsed);
+
+    const double tp_start = hpc_gettime();
     for (s=0; s<nsteps; s++) {
         /* L'ordine delle istruzioni che seguono e' importante */
         increment_energy(cur, n, EDELTA);
@@ -275,14 +264,17 @@ int main( int argc, char* argv[] )
         cur = next;
         next = tmp;
     }
-    const double elapsed = hpc_gettime() - tstart;
-    
+    const double p_elapsed = hpc_gettime() - tp_start;
+
     double Mupdates = (((double)n)*n/1.0e6)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
-    fprintf(stderr, "%s : %.4f Mupdates in %.4f seconds (%f Mupd/sec)\n", argv[0], Mupdates, elapsed, Mupdates/elapsed);
+    fprintf(stderr, "%s : %.4f Mupdates in %.4f seconds (%f Mupd/sec)\n", argv[0], Mupdates, p_elapsed, Mupdates/p_elapsed);
+    fprintf(stderr, "%s : %.4f seconds taken for parallel portion\n", argv[0], p_elapsed);
+    fprintf(stderr, "%s : Total execution time: %.4f seconds\n", argv[0], s_elapsed + p_elapsed);
+    fprintf(stderr, "%s : alpha value (fraction of the total execution time of the serial program): %.8f\n", argv[0], s_elapsed/(s_elapsed + p_elapsed));
 
     /* Libera la memoria */
     free(cur);
     free(next);
-    
+
     return EXIT_SUCCESS;
 }
