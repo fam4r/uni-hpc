@@ -30,17 +30,115 @@ The report can be found in `./report/report-789072.pdf`.
 
 Install OpenMP and CUDA in your system (ArchLinux `openmp` and `cuda`).
 
-To plot install `gnuplot`.
+To plot install Matplotlib and NumPy (ArchLinux `python-matplotlib` and
+`python-numpy`).
 
-To run the code please execute the following instructions:
+## OpenMP
+
+Compile:
 
 ```
+cd src
 make clean
-make
-./omp-earthquake 100000 256 > out # to run OpenMP implementation
-./cuda-earthquake.cu 100000 256 > out # to run CUDA implementation
-./plot.sh <filename>.png # dynamic image creation
-# feh earthquake.png
-# feh omp-earthquake.png
-# feh cuda-earthquake.png
+make openmp
+```
+
+Run simulation:
+
+```
+./omp-earthquake [nsteps [n]] > graphs/data/omp-simulation.dat
+
+# example
+./omp-earthquake 100000 256 > graphs/data/omp-simulation.dat
+```
+
+Plot simulation results:
+
+```
+cd graphs
+./plot-simulation.py
+feh omp-earthquake.png
+```
+
+### Performance evaluation
+
+#### Speedup
+
+Formula: Tserial / Tparallel
+
+Run speedup calculation (takes some time):
+
+```
+cd src
+./omp-speedup.sh 1>graphics/data/omp-speedup.dat 2>graphics/data/omp-strong.dat
+```
+
+1) computes the simulation using `#cores` from 1 to `n_cores` * 2 (1, 2,4, 8 , 16...) and for differet matrix sizes (eg. `256`, `512` and `1024`)
+2) takes timing for each computation
+3) calculates the speedup (formula `Tserial / Tparallel`)
+4) calculates the strong efficiency (see [Strong efficiency](#strong-efficiency))
+
+**NOTE**: it ignores the non-parallelizable portion of the simulation (matrix initialization) beacuse it takes negligible timings.
+
+Plot speedup graphics:
+
+```
+cd graphics
+./plot-speedup.py
+feh omp-speedup.png
+```
+
+#### Strong efficiency
+
+Formula: Speedup / n\_threads
+
+Strong efficiency data has been calculated in the speedup script.
+
+```
+cd graphics
+./plot-strong.py
+feh omp-strong.png
+```
+
+#### Weak efficiency
+
+Formula: T1 / Tp
+
+Run tests:
+
+```
+./omp-weak-scaling.sh > graphics/data/omp-weak.dat
+./plot-weak.py
+feh omp-weak.png
+```
+
+## CUDA
+
+Compile:
+
+```
+cd src
+make clean
+make cuda
+```
+
+Run simulation:
+
+```
+./cuda-earthquake [nsteps [n]] > graphs/data/cuda-simulation.dat
+
+# example
+./cuda-earthquake 100000 256 > graphs/data/cuda-simulation.dat
+```
+
+----------
+
+Plot simulation results:
+
+```
+cd graphs
+./plot-simulation.py
+gnuplot plot-simulation.gp
+feh omp-earthquake.png
+#./plot-simulation.sh omp-simulation.dat omp-earthquake.png
 ```

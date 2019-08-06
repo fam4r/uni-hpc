@@ -54,10 +54,14 @@
 #include <stdlib.h>     /* rand() */
 #include <assert.h>
 
+#define BLKSIZE 1024
+
 /* energia massima */
 #define EMAX 4.0f
 /* energia da aggiungere ad ogni timestep */
 #define EDELTA 1e-4
+/* dimensione halo */
+#define HALO 1
 
 /**
  * Restituisce un puntatore all'elemento di coordinate (i,j) del
@@ -115,18 +119,17 @@ void increment_energy( float *grid, int n, float delta )
  * Restituisce il numero di celle la cui energia e' strettamente
  * maggiore di EMAX.
  */
-int count_cells( float *grid, int n )
+void count_cells( float *grid, int n, int *c)
 {
-    int c = 0;
+    *c = 0;
     for (int i=0; i<n; i++) {
         for (int j=0; j<n; j++) {
-            if ( *IDX(grid, i, j, n) > EMAX ) { c++; }
+            if ( *IDX(grid, i, j, n) > EMAX ) { (*c)++; }
         }
     }
-    return c;
 }
 
-/** 
+/**
  * Distribuisce l'energia di ogni cella a quelle adiacenti (se
  * presenti). cur denota il dominio corrente, next denota il dominio
  * che conterra' il nuovo valore delle energie. Questa funzione
@@ -169,7 +172,7 @@ void propagate_energy( float *cur, float *next, int n )
  * Restituisce l'energia media delle celle del dominio grid di
  * dimensioni n*n. Il dominio non viene modificato.
  */
-float average_energy(float *grid, int n)
+void average_energy(float *grid, int n, float *Emean)
 {
     float sum = 0.0f;
     for (int i=0; i<n; i++) {
@@ -177,18 +180,22 @@ float average_energy(float *grid, int n)
             sum += *IDX(grid, i, j, n);
         }
     }
-    return (sum / (n*n));
+
+    *Emean = (sum / (n*n));
 }
 
 int main( int argc, char* argv[] )
 {
-    float *cur, *next;
+    float *cur;
+    float *d_cur, *d_next;
     int s, n = 256, nsteps = 2048;
     float Emean;
+    float *d_Emean;
     int c;
+    int *d_c;
 
     srand(19); /* Inizializzazione del generatore pseudocasuale */
-    
+
     if ( argc > 3 ) {
         fprintf(stderr, "Usage: %s [nsteps [n]]\n", argv[0]);
         return EXIT_FAILURE;
@@ -202,38 +209,70 @@ int main( int argc, char* argv[] )
         n = atoi(argv[2]);
     }
 
-    const size_t size = n*n*sizeof(float);
+    /* n (e size) è la dimensione COMPRESA di HALO */
+    n = n + (2 * HALO);
+    const size_t domain_size = n*n*sizeof(float);
+    const size_t counter_size = sizeof(int);
+    const size_t emean_size = sizeof(float);
 
     /* Allochiamo i domini */
-    cur = (float*)malloc(size); assert(cur);
-    next = (float*)malloc(size); assert(next);
+    cur = (float*)malloc(domain_size);
+    assert(cur);
 
-    /* L'energia iniziale di ciascuna cella e' scelta 
-       con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */       
+    /* Allocate space for device copies of cur, next, c*/
+    CudaSafeCall(cudaMalloc((void **)&d_cur, domain_size) );
+    CudaSafeCall(cudaMalloc((void **)&d_next, domain_size) );
+    CudaSafeCall(cudaMalloc((void **)&d_c, counter_size) );
+    CudaSafeCall(cudaMalloc((void **)&d_Emean, emean_size) );
+
+    /* L'energia iniziale di ciascuna cella e' scelta
+       con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */
     setup(cur, n, 0, EMAX*0.1);
-    
+
+    /* Copying data from host to device */
+    cudaMemcpy(d_cur, &cur, domain_size, cudaMemcpyHostToDevice);
+
     const double tstart = hpc_gettime();
     for (s=0; s<nsteps; s++) {
+
         /* L'ordine delle istruzioni che seguono e' importante */
+        /*
         increment_energy(cur, n, EDELTA);
         c = count_cells(cur, n);
         propagate_energy(cur, next, n);
         Emean = average_energy(next, n);
+        */
+
+        increment_energy<<<1,1>>>(d_cur, n, EDELTA);
+
+        count_cells<<<1,1>>>(d_cur, n, d_c); /* kernel must return void -> changed */
+        cudaMemcpy(&c, d_c, counter_size, cudaMemcpyDeviceToHost);
+
+        propagate_energy<<<1,1>>>(d_cur, d_next, n);
+
+        average_energy<<<1,1>>>(d_next, n, d_Emean); /* kernel must return void -> changed */
+        cudaMemcpy(&Emean, d_Emean, emean_size, cudaMemcpyDeviceToHost);
 
         printf("%d %f\n", c, Emean);
 
-        float *tmp = cur;
-        cur = next;
-        next = tmp;
+        /* swap cur and next on the GPU */
+        float *d_tmp = d_cur;
+        d_cur = d_next;
+        d_next = d_tmp;
     }
     const double elapsed = hpc_gettime() - tstart;
-    
+
     double Mupdates = (((double)n)*n/1.0e6)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
     fprintf(stderr, "%s : %.4f Mupdates in %.4f seconds (%f Mupd/sec)\n", argv[0], Mupdates, elapsed, Mupdates/elapsed);
 
     /* Libera la memoria */
     free(cur);
-    free(next);
-    
+
+    /* Libera la memoria */
+    cudaFree(d_cur);
+    cudaFree(d_next);
+    cudaFree(d_c);
+    cudaFree(d_Emean);
+
     return EXIT_SUCCESS;
 }
