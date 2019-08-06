@@ -110,13 +110,9 @@ void setup( float* grid, int n, float fmin, float fmax )
     /* Fill matrix top and bottom with zeroes (HALO) */
     for (j = 0 ; j < n; j++) {
         *IDX(grid, 0, j, n) = 0.0; /* TOP */
+        *IDX(grid, j, 0, n) = 0.0; /* LEFT */
         *IDX(grid, n - HALO, j, n) = 0.0; /* BOTTOM */
-    }
-
-    /* Fill matrix left and right with zeroes (HALO) */
-    for (i = 0 ; i < n; i++) {
-        *IDX(grid, i, 0, n) = 0.0; /* LEFT */
-        *IDX(grid, i, n - HALO, n) = 0.0; /* RIGHT */
+        *IDX(grid, j, n - HALO, n) = 0.0; /* RIGHT */
     }
 }
 
@@ -155,7 +151,7 @@ int count_cells( float *grid, int n )
     return c;
 }
 
-/** 
+/**
  * Distribuisce l'energia di ogni cella a quelle adiacenti (se
  * presenti). cur denota il dominio corrente, next denota il dominio
  * che conterra' il nuovo valore delle energie. Questa funzione
@@ -208,8 +204,6 @@ float average_energy(float *grid, int n)
         }
     }
     return (sum / (n*n));
-
-
 }
 
 int main( int argc, char* argv[] )
