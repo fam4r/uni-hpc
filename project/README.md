@@ -24,9 +24,7 @@ I chose OpenMP and CUDA implementations.
 
 The report can be found in `./report/report-789072.pdf`.
 
-## Run
-
-### Requirements
+## Requirements
 
 Install OpenMP and CUDA in your system (ArchLinux `openmp` and `cuda`).
 
