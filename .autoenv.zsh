@@ -20,6 +20,23 @@ function sendcuda() {
     scp {Makefile,earthquake.c,cuda-earthquake.cu,hpc.h} unicuda:/home/local/STUDENTI/fabrizio.margotta/
 }
 
+function computecuda() {
+    ssh unicuda "cd ~;\
+        make clean;\
+        make;\
+        ./cuda-earthquake 100000 256 > out"
+}
+
 function recvcuda() {
     scp unicuda:/home/local/STUDENTI/fabrizio.margotta/out .
+}
+
+function runcuda() {
+    sendcuda
+    computecuda
+    if [[ $? == 0 ]]; then
+        recvcuda
+    else
+        echo "execution failed, not sending results..."
+    fi
 }
