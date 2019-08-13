@@ -54,7 +54,13 @@
 #include <stdlib.h>     /* rand() */
 #include <assert.h>
 
-#define BLKSIZE 1024
+/* We use 2D blocks of size (BLKDIM * BLKDIM) to compute
+   the next configuration of the automaton */
+#define BLKDIM 32
+
+/* We use 1D blocks of (BLKDIM_REDUCTION) threads to perform reduction
+ * operations */
+#define BLKDIM_REDUCTION 1024
 
 /* energia massima */
 #define EMAX 4.0f
@@ -66,8 +72,9 @@
 /**
  * Restituisce un puntatore all'elemento di coordinate (i,j) del
  * dominio grid con n colonne.
+ * NB: n è comprensiovo di HALO.
  */
-static inline float *IDX(float *grid, int i, int j, int n)
+__device__ __host__ static inline float *IDX(float *grid, int i, int j, int n)
 {
     return (grid + i*n + j);
 }
@@ -94,11 +101,37 @@ float randab( float a, float b )
  */
 void setup( float* grid, int n, float fmin, float fmax )
 {
-    for ( int i=0; i<n; i++ ) {
-        for ( int j=0; j<n; j++ ) {
+    int i = 0, j = 0;
+
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "setup: start internal matrix\n");
+#endif
+    /* Inizializzo la matrice interna (SENZA HALO) con i valori casuali */
+    for(i = HALO; i < n - HALO; i++) {
+        for(j = HALO; j < n - HALO; j++) {
             *IDX(grid, i, j, n) = randab(fmin, fmax);
         }
     }
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "setup: internal matrix complete\n");
+#endif
+
+    /*
+     * Note: assuming max HALO value = 1
+     * If HALO would be bigger, those loops need to be handled
+     * by external-looping other HALO layers (concept idea).
+     */
+
+    /* Fill matrix top and bottom with zeroes (HALO) */
+    for (j = 0 ; j < n; j++) {
+        *IDX(grid, 0, j, n) = 0.0; /* TOP */
+        *IDX(grid, j, 0, n) = 0.0; /* LEFT */
+        *IDX(grid, n - HALO, j, n) = 0.0; /* BOTTOM */
+        *IDX(grid, j, n - HALO, n) = 0.0; /* RIGHT */
+    }
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "setup: halo complete\n");
+#endif
 }
 
 /**
@@ -106,12 +139,13 @@ void setup( float* grid, int n, float fmin, float fmax )
  * n*n. Questa funzione realizza il passo 1 descritto nella specifica
  * del progetto.
  */
-void increment_energy( float *grid, int n, float delta )
+__global__ void increment_energy(float *grid, int n, float delta)
 {
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            *IDX(grid, i, j, n) += delta;
-        }
+    const int i = HALO + blockIdx.y * blockDim.y + threadIdx.y;
+    const int j = HALO + blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (i < n - HALO && j < n - HALO) {
+        *IDX(grid, i, j, n) += delta;
     }
 }
 
@@ -119,12 +153,26 @@ void increment_energy( float *grid, int n, float delta )
  * Restituisce il numero di celle la cui energia e' strettamente
  * maggiore di EMAX.
  */
-void count_cells( float *grid, int n, int *c)
+__global__ void count_cells(float *grid, int n, int *c)
 {
-    *c = 0;
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            if ( *IDX(grid, i, j, n) > EMAX ) { (*c)++; }
+    const int i = HALO + blockIdx.x * blockDim.x + threadIdx.x;
+    const int array_size = n * n;
+
+    /* concept
+       sono un thread (cella)
+       se mio valore > EMAX
+       scrivo 1 nella variabile
+       */
+
+    /* nelle note ho scritto che le operazioni atomiche su N grandi sono
+     * dispensiose, forse non conviene lasciarlo così, provare a fare un array
+     * grande n*n in cui in ogni cella un thread salva 1 o 0 in base a se il
+     * valore supera EMAX e poi faccio la riduzione su quell'array */
+
+    /* usare && */
+    if (i < array_size) {
+        if ( grid[i] > EMAX ) {
+            atomicAdd(c, 1);
         }
     }
 }
@@ -135,36 +183,31 @@ void count_cells( float *grid, int n, int *c)
  * che conterra' il nuovo valore delle energie. Questa funzione
  * realizza il passo 2 descritto nella specifica del progetto.
  */
-void propagate_energy( float *cur, float *next, int n )
+__global__ void propagate_energy( float *cur, float *next, int n )
 {
+    const int i = HALO + blockIdx.y * blockDim.y + threadIdx.y;
+    const int j = HALO + blockIdx.x * blockDim.x + threadIdx.x;
+
     const float FDELTA = EMAX/4;
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            float F = *IDX(cur, i, j, n);
-            float *out = IDX(next, i, j, n);
+    float F = *IDX(cur, i, j, n);
+    float *out = IDX(next, i, j, n);
 
-            /* Se l'energia del vicino di sinistra (se esiste) e'
-               maggiore di EMAX, allora la cella (i,j) ricevera'
-               energia addizionale FDELTA = EMAX/4 */
-            if ((j>0) && (*IDX(cur, i, j-1, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino di destra */
-            if ((j<n-1) && (*IDX(cur, i, j+1, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino in alto */
-            if ((i>0) && (*IDX(cur, i-1, j, n) > EMAX)) { F += FDELTA; }
-            /* Idem per il vicino in basso */
-            if ((i<n-1) && (*IDX(cur, i+1, j, n) > EMAX)) { F += FDELTA; }
+    if (i < n - HALO && j < n - HALO) {
+        if ((j > 0)     && (*IDX(cur, i, j - 1, n) > EMAX)) { F += FDELTA; }
+        if ((j < n - 1) && (*IDX(cur, i, j + 1, n) > EMAX)) { F += FDELTA; }
+        if ((i > 0)     && (*IDX(cur, i - 1, j, n) > EMAX)) { F += FDELTA; }
+        if ((i < n - 1) && (*IDX(cur, i + 1, j, n) > EMAX)) { F += FDELTA; }
 
-            if (F > EMAX) {
-                F -= EMAX;
-            }
-
-            /* Si noti che il valore di F potrebbe essere ancora
-               maggiore di EMAX; questo non e' un problema:
-               l'eventuale eccesso verra' rilasciato al termine delle
-               successive iterazioni vino a riportare il valore
-               dell'energia sotto la foglia EMAX. */
-            *out = F;
+        if (F > EMAX) {
+            F -= EMAX;
         }
+
+        /* Si noti che il valore di F potrebbe essere ancora
+           maggiore di EMAX; questo non e' un problema:
+           l'eventuale eccesso verra' rilasciato al termine delle
+           successive iterazioni vino a riportare il valore
+           dell'energia sotto la foglia EMAX. */
+        *out = F;
     }
 }
 
@@ -172,23 +215,21 @@ void propagate_energy( float *cur, float *next, int n )
  * Restituisce l'energia media delle celle del dominio grid di
  * dimensioni n*n. Il dominio non viene modificato.
  */
-void average_energy(float *grid, int n, float *Emean)
+__global__ void average_energy(float *grid, int n, float *Emean)
 {
-    float sum = 0.0f;
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            sum += *IDX(grid, i, j, n);
-        }
-    }
+    const int i = HALO + blockIdx.x * blockDim.x + threadIdx.x;
+    const int array_size = n * n;
 
-    *Emean = (sum / (n*n));
+    if (i < array_size) {
+        atomicAdd(Emean, grid[i]);
+    }
 }
 
 int main( int argc, char* argv[] )
 {
     float *cur;
     float *d_cur, *d_next;
-    int s, n = 256, nsteps = 2048;
+    int s, width = 256, nsteps = 2048;
     float Emean;
     float *d_Emean;
     int c;
@@ -206,52 +247,84 @@ int main( int argc, char* argv[] )
     }
 
     if ( argc > 2 ) {
-        n = atoi(argv[2]);
+        width = atoi(argv[2]);
     }
 
-    /* n (e size) è la dimensione COMPRESA di HALO */
-    n = n + (2 * HALO);
-    const size_t domain_size = n*n*sizeof(float);
-    const size_t counter_size = sizeof(int);
+    /* width (e size) è la dimensione COMPRESA di HALO */
+    width = width + (2 * HALO);
+    const size_t domain_size = width*width*sizeof(float *);
+    const size_t count_size = sizeof(int);
     const size_t emean_size = sizeof(float);
+
+    /* 1D thread blocks used for reduction operations */
+    dim3 reduBlock(BLKDIM_REDUCTION);
+    dim3 reduGrid((width + BLKDIM_REDUCTION-1)/BLKDIM_REDUCTION);
+
+    /* 2D thread blocks used for the update step */
+    dim3 stepBlock(BLKDIM, BLKDIM);
+    dim3 stepGrid((width + BLKDIM-1)/BLKDIM, (width + BLKDIM-1)/BLKDIM);
 
     /* Allochiamo i domini */
     cur = (float*)malloc(domain_size);
     assert(cur);
 
     /* Allocate space for device copies of cur, next, c*/
-    CudaSafeCall(cudaMalloc((void **)&d_cur, domain_size) );
-    CudaSafeCall(cudaMalloc((void **)&d_next, domain_size) );
-    CudaSafeCall(cudaMalloc((void **)&d_c, counter_size) );
-    CudaSafeCall(cudaMalloc((void **)&d_Emean, emean_size) );
-
+    cudaSafeCall(cudaMalloc((void **)&d_cur, domain_size) );
+    cudaSafeCall(cudaMalloc((void **)&d_next, domain_size) );
+    cudaSafeCall(cudaMalloc((void **)&d_c, count_size) );
+    cudaSafeCall(cudaMalloc((void **)&d_Emean, emean_size) );
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "cudaMalloc complete\n");
+#endif
     /* L'energia iniziale di ciascuna cella e' scelta
        con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */
-    setup(cur, n, 0, EMAX*0.1);
+    setup(cur, width, 0, EMAX*0.1);
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "setup complete\n");
+#endif
 
     /* Copying data from host to device */
-    cudaMemcpy(d_cur, &cur, domain_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_cur, &cur, domain_size, cudaMemcpyHostToDevice);
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "cudaMemcpy (host -> device) complete\n");
+#endif
+    c = 0;
+    cudaMemcpy(d_c, &c, count_size, cudaMemcpyHostToDevice);
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "cudaMemcpy (host -> device) complete\n");
+#endif
+    Emean = 0.0f;
+    cudaMemcpy(d_Emean, &Emean, emean_size, cudaMemcpyHostToDevice);
+#ifdef PRINT_DEBUG
+    fprintf(stderr, "cudaMemcpy (host -> device) complete\n");
+#endif
 
     const double tstart = hpc_gettime();
     for (s=0; s<nsteps; s++) {
-
         /* L'ordine delle istruzioni che seguono e' importante */
-        /*
-        increment_energy(cur, n, EDELTA);
-        c = count_cells(cur, n);
-        propagate_energy(cur, next, n);
-        Emean = average_energy(next, n);
-        */
 
-        increment_energy<<<1,1>>>(d_cur, n, EDELTA);
+        /* increment_energy(cur, width, EDELTA); */
+        /* <<<nBlocks, nThreadsPerBlock>>> */
+        increment_energy<<<stepGrid, stepBlock>>>(d_cur, width, EDELTA);
+        cudaDeviceSynchronize();
 
-        count_cells<<<1,1>>>(d_cur, n, d_c); /* kernel must return void -> changed */
-        cudaMemcpy(&c, d_c, counter_size, cudaMemcpyDeviceToHost);
+        /* c = count_cells(cur, width); */
+        /* RIDUZIONE -> thread block 1D */
+        count_cells<<<reduGrid, reduBlock>>>(d_cur, width, d_c); /* kernel must return void -> changed */
+        cudaDeviceSynchronize();
+        cudaMemcpy(&c, d_c, count_size, cudaMemcpyDeviceToHost);
 
-        propagate_energy<<<1,1>>>(d_cur, d_next, n);
+        /* propagate_energy(cur, next, width); */
+        propagate_energy<<<stepGrid, stepBlock>>>(d_cur, d_next, width);
+        cudaDeviceSynchronize();
 
-        average_energy<<<1,1>>>(d_next, n, d_Emean); /* kernel must return void -> changed */
+        /* Emean = average_energy(next, width); */
+        /* RIDUZIONE -> thread block 1D */
+        average_energy<<<reduGrid, reduBlock>>>(d_next, width, d_Emean); /* kernel must return void -> changed */
+        cudaDeviceSynchronize();
         cudaMemcpy(&Emean, d_Emean, emean_size, cudaMemcpyDeviceToHost);
+        /* compute mean in CPU */
+        Emean = (Emean / (width * width));
 
         printf("%d %f\n", c, Emean);
 
@@ -262,13 +335,12 @@ int main( int argc, char* argv[] )
     }
     const double elapsed = hpc_gettime() - tstart;
 
-    double Mupdates = (((double)n)*n/1.0e6)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
+    double Mupdates = (((double)width)*width/1.0e6)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
     fprintf(stderr, "%s : %.4f Mupdates in %.4f seconds (%f Mupd/sec)\n", argv[0], Mupdates, elapsed, Mupdates/elapsed);
 
-    /* Libera la memoria */
+    /* Free memory on host */
     free(cur);
-
-    /* Libera la memoria */
+    /* Free memory on device */
     cudaFree(d_cur);
     cudaFree(d_next);
     cudaFree(d_c);

@@ -24,7 +24,7 @@ EXE_SERIAL:=earthquake
 EXE:=$(EXE_OMP) $(EXE_MPI) $(EXE_SERIAL) $(EXE_CUDA)
 CFLAGS+=-std=c99 -Wall -Wpedantic -O2 -D_XOPEN_SOURCE=600
 NVCC:=nvcc
-NVCFLAGS+=-Wno-deprecated-gpu-targets
+NVCFLAGS+=-Wno-deprecated-gpu-targets #-DPRINT_DEBUG
 
 .PHONY: clean plot
 
