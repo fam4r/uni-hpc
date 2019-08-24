@@ -109,10 +109,10 @@ void setup( float* grid, int n, float fmin, float fmax )
 
     /* Fill matrix top and bottom with zeroes (HALO) */
     for (j = 0 ; j < n; j++) {
-        *IDX(grid, 0, j, n) = 0.0; /* TOP */
-        *IDX(grid, j, 0, n) = 0.0; /* LEFT */
-        *IDX(grid, n - HALO, j, n) = 0.0; /* BOTTOM */
-        *IDX(grid, j, n - HALO, n) = 0.0; /* RIGHT */
+        *IDX(grid, 0, j, n) = 0.0f; /* TOP */
+        *IDX(grid, j, 0, n) = 0.0f; /* LEFT */
+        *IDX(grid, n - HALO, j, n) = 0.0f; /* BOTTOM */
+        *IDX(grid, j, n - HALO, n) = 0.0f; /* RIGHT */
     }
 }
 
@@ -171,10 +171,10 @@ void propagate_energy( float *cur, float *next, int n )
                energia addizionale FDELTA = EMAX/4 */
             /* Looking to all neighbors*/
 
-            if ((j > 0)     && (*IDX(cur, i, j - 1, n) > EMAX)) { F += FDELTA; }
-            if ((j < n - 1) && (*IDX(cur, i, j + 1, n) > EMAX)) { F += FDELTA; }
-            if ((i > 0)     && (*IDX(cur, i - 1, j, n) > EMAX)) { F += FDELTA; }
-            if ((i < n - 1) && (*IDX(cur, i + 1, j, n) > EMAX)) { F += FDELTA; }
+            if (*IDX(cur, i, j - 1, n) > EMAX) { F += FDELTA; }
+            if (*IDX(cur, i, j + 1, n) > EMAX) { F += FDELTA; }
+            if (*IDX(cur, i - 1, j, n) > EMAX) { F += FDELTA; }
+            if (*IDX(cur, i + 1, j, n) > EMAX) { F += FDELTA; }
 
             if (F > EMAX) {
                 F -= EMAX;
@@ -240,7 +240,7 @@ int main( int argc, char* argv[] )
        con probabilita' uniforme nell'intervallo [0, EMAX*0.1] */
     /* L'inizializzazione delle ghost cell a 0 è gestita internamente */
     const double ts_start = hpc_gettime();
-    setup(cur, n, 0, EMAX*0.1);
+    setup(cur, n, 0, EMAX*0.1f);
     const double s_elapsed = hpc_gettime() - ts_start;
     fprintf(stderr, "%s : %.8f seconds taken for serial portion\n", argv[0], s_elapsed);
 
@@ -260,7 +260,7 @@ int main( int argc, char* argv[] )
     }
     const double p_elapsed = hpc_gettime() - tp_start;
 
-    double Mupdates = (((double)n)*n/1.0e6)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
+    double Mupdates = (((double)n)*n/1.0e6f)*nsteps; /* milioni di celle aggiornate per ogni secondo di wall clock time */
     fprintf(stderr, "%s : %.4f Mupdates in %.4f seconds (%f Mupd/sec)\n", argv[0], Mupdates, p_elapsed, Mupdates/p_elapsed);
     fprintf(stderr, "%s : %.4f seconds taken for parallel portion\n", argv[0], p_elapsed);
     fprintf(stderr, "%s : Total execution time: %.4f seconds\n", argv[0], s_elapsed + p_elapsed);
