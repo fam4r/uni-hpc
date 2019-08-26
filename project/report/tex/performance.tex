@@ -1,0 +1,70 @@
+\section{Valutazione prestazioni}
+AMD Opteron (tm) Processor 6376 8 core 16 thread.
+
+
+Le tempistiche indicate sono state tutte ottenute mediante le funzioni di
+libreria messe a disposizione dal docente. Per ulteriori informazioni si
+consulti il codice sorgente.
+
+\subsection{Speedup}
+
+Il calcolo dello speedup viene eseguito mediante la seguente formula:
+
+\[ 
+    S(p) = \frac{T_{serial}}{T_{parallel}(p)}
+\]
+
+in cui:
+
+\begin{center}
+\begin{tabular}{lll}
+    p & : & \# processori/core\\
+    T\textsubscript{serial}& : & tempo di esecuzione della porzione seriale
+    (T\textsubscript{serial}=T\textsubscript{parallel}(1))\\
+    T\textsubscript{parallel}(\textit{p}) & : & tempo di esecuzione della porzione con
+    \textit{p} processori/core
+\end{tabular}
+\end{center}
+
+Poiché l'implementazione della soluzione contiene porzioni di codice non
+parallelizzabili (si veda la funzione \texttt{setup}), dovremmo considerare
+T\textsubscript{parallel}(\textit{p}) nel seguente modo:
+
+\[ 
+T_{parallel}(p) = \alpha * T_{serial} +  \frac{(1 - \alpha) *
+T_{serial}}{p}
+\]
+
+in cui $\alpha$ è il fattore relativo alla porzione di codice non
+parallelizzabile, calcolato come segue:
+
+\[ 
+\alpha = \frac{T_{serial}}{T_{serial} + T_{parallel}}.
+\]
+
+Tuttavia, come mostrato nella seguente tabella, la porzione di codice seriale
+(non parallelizzabile) impiega tempo trascurabile rispetto alla porzione di
+codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
+
+%\pgfmathparse{0.00140063/(0.00140063 + 14.2519)}\pgfkeys{/pgf/number format/sci}\pgfmathresult
+
+\begin{center}
+\begin{tabular}{ccccc}
+ \hline
+ Lato & Numero passi & T\textsubscript{seriale} (\textit{s}) &
+ T\textsubscript{parallelo} (\textit{s})& $\alpha$ \\
+ \hline
+ 256 & 100000 & 0.00140063 & 14.2519 & 0.00009827 \\
+ 1024 & 100000 & 0.02356447 & 150.2037 & 0.00015686 \\
+ \hline
+ %s_elapsed/(s_elapsed + p_elapsed)
+ %0.00009827
+\end{tabular}
+\end{center}
+
+Per le siffatte osservazioni, considereremo
+T\textsubscript{parallel}(\textit{p}) in tal modo:
+
+\[ 
+T_{parallel}(p) = \frac{T_{serial}}{p}.
+\]
