@@ -65,7 +65,7 @@
 /* energia massima */
 #define EMAX 4.0f
 /* energia da aggiungere ad ogni timestep */
-#define EDELTA 1e-4
+#define EDELTA 1e-4f
 /* dimensione halo */
 #define HALO 1
 
@@ -124,10 +124,10 @@ void setup( float* grid, int n, float fmin, float fmax )
 
     /* Fill matrix top and bottom with zeroes (HALO) */
     for (j = 0 ; j < n; j++) {
-        *IDX(grid, 0, j, n) = 0.0; /* TOP */
-        *IDX(grid, j, 0, n) = 0.0; /* LEFT */
-        *IDX(grid, n - HALO, j, n) = 0.0; /* BOTTOM */
-        *IDX(grid, j, n - HALO, n) = 0.0; /* RIGHT */
+        *IDX(grid, 0, j, n) = 0.0f; /* TOP */
+        *IDX(grid, j, 0, n) = 0.0f; /* LEFT */
+        *IDX(grid, n - HALO, j, n) = 0.0f; /* BOTTOM */
+        *IDX(grid, j, n - HALO, n) = 0.0f; /* RIGHT */
     }
 #ifdef PRINT_DEBUG
     fprintf(stderr, "setup: halo complete\n");
