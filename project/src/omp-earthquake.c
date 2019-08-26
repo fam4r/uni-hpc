@@ -57,7 +57,7 @@
 /* energia massima */
 #define EMAX 4.0f
 /* energia da aggiungere ad ogni timestep */
-#define EDELTA 1e-4
+#define EDELTA 1e-4f
 /* dimensione halo */
 #define HALO 1
 
@@ -96,7 +96,7 @@ void setup( float* grid, int n, float fmin, float fmax )
 
     /* Inizializzo la matrice reale (SENZA HALO) con i valori casuali */
     for (i = HALO; i < n - HALO; i++ ) {
-        for ( int j = HALO; j < n - HALO; j++ ) {
+        for (j = HALO; j < n - HALO; j++ ) {
             *IDX(grid, i, j, n) = randab(fmin, fmax);
         }
     }
