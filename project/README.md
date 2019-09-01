@@ -31,6 +31,27 @@ Install OpenMP and CUDA in your system (ArchLinux `openmp` and `cuda`).
 To plot install Matplotlib and NumPy (ArchLinux `python-matplotlib` and
 `python-numpy`).
 
+### Unibo usage
+
+I provided useful `zsh-autoenv` functions to send sources, compile, compute and
+get results from Unibo servers.
+
+Provide a proper ssh configuration, like:
+
+```
+Host uniomp unicuda uniext
+    User [redacted]
+
+Host uniext
+    HostName [redacted]
+
+Host uniomp
+    HostName [redacted]
+    ProxyJump uniext
+```
+
+so you can use commands like `runcuda`.
+
 ## OpenMP
 
 Compile:
@@ -136,7 +157,6 @@ Plot simulation results:
 ```
 cd graphs
 ./plot-simulation.py
-gnuplot plot-simulation.gp
-feh omp-earthquake.png
+feh cuda-earthquake.png
 #./plot-simulation.sh omp-simulation.dat omp-earthquake.png
 ```
