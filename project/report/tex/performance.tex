@@ -47,20 +47,20 @@ Tuttavia, come mostrato nella seguente tabella, la porzione di codice seriale
 codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
 
 %\pgfmathparse{0.00140063/(0.00140063 + 14.2519)}\pgfkeys{/pgf/number format/sci}\pgfmathresult
-
-\begin{center}
+\begin{table}[ht]
 \begin{tabular}{ccccc}
- \hline
- Lato & Numero passi & T\textsubscript{seriale} (\textit{s}) &
+\toprule
+ Lato dominio & Numero passi & T\textsubscript{seriale} (\textit{s}) &
  T\textsubscript{parallelo} (\textit{s})& $\alpha$ \\
- \hline
- 256 & 100000 & 0.00140063 & 14.2519 & 0.00009827 \\
- 1024 & 100000 & 0.02356447 & 150.2037 & 0.00015686 \\
- \hline
+ \midrule
+    256 & \multirow{2}{*}{100000} & 0.00140063 & 14.2519 & 0.00009827 \\
+    1024 & & 0.02356447 & 150.2037 & 0.00015686 \\
+\bottomrule
  %s_elapsed/(s_elapsed + p_elapsed)
  %0.00009827
 \end{tabular}
-\end{center}
+\caption{caption}
+\end{table}
 
 Per le siffatte osservazioni, considereremo
 T\textsubscript{parallel}(\textit{p}) in tal modo:
