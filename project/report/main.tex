@@ -9,13 +9,18 @@
 \usepackage{float}
 \usepackage{minted}
 \usepackage{tikz}
+\usepackage{multirow}
 \usepackage[nottoc]{tocbibind}
 \usepackage{bookmark}
+\usepackage{booktabs}
+\usepackage{tabularx}
 \graphicspath{{./img/}}
 \hypersetup{pdftitle={Relazione di progetto-High Performance Computing},
     pdfauthor={Fabrizio Margotta},
     pdfkeywords={hpc, openmp, cuda}
 }
+
+\renewcommand\arraystretch{1.2}
 
 \begin{document}
 
@@ -36,10 +41,10 @@
 %[Questa pagina è stata lasciata intenzionalmente bianca.]
 %\end{center}
 %\newpage
-\setcounter{tocdepth}{2} % Show sections
-\tableofcontents \thispagestyle{empty}
-
-\newpage
+%\setcounter{tocdepth}{2} % Show sections
+%\tableofcontents \thispagestyle{empty}
+%
+%\newpage
 \pagestyle{headings}
 
 \input{./tex/analisi.tex}
@@ -51,8 +56,8 @@
 \input{./tex/performance.tex}
 %\newpage
 \input{./tex/conclusioni.tex}
-\newpage
-\appendix
+%\newpage
+%\appendix
 %\input{./tex/appendice.tex}
 %\newpage
 \bibliographystyle{plain}
