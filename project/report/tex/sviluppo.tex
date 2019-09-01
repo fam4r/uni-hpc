@@ -1,5 +1,7 @@
 \section{Sviluppo}
 
+\subsection{Ghost area}
+
 Entrambe le soluzioni proposte si avvalgono dell'utilizzo di una ghost area
 inizializzata a zero (e mai più modificata).
 Ciò permette di snellire notevolmente l'impatto sulle prestazioni
@@ -7,7 +9,9 @@ dell'operazione di propagazione, poiché, essendoci una regione di intorno
 (\textit{halo}) al dominio, non sarà più necessario controllare che le celle
 adiacenti a quella presa in esame siano ai bordi del dominio stesso.
 
-É stato inizialmente ipotizzato l'accesso alla matrice considerandola come un
+\subsection{Accesso in memoria al dominio}
+
+È stato inizialmente ipotizzato l'accesso alla matrice considerandola come un
 array, in accordo con la rappresentazione in memoria delle matrici fornita dal
 linguaggio C.
 Ciò avrebbe permesso di scorrere in modo sequenziale la matrice stessa,
@@ -29,25 +33,119 @@ del codice sorgente.
 
 \subsection{Implementazione OpenMP}
 
+\subsubsection{Parallelizzazione della versione seriale}
+
 L'inizializzazione della ghost area a zero non è stata parallelizzata poiché i
 test effettuati hanno mostrato un degradamento, seppur minimo, delle
-prestazioni.
+prestazioni. Si noti il confronto nella tabella di seguito:
 
-\begin{center}
-\begin{tabular}{ccc}
- \hline
- Lato dominio & Numero passi & T\textsubscript{setup} (\textit{s})\\
- \hline
- 512 & 1000 & 0.00337177\\
- 512 & 1000 & 0.00454419\\
- \hline
+\begin{table}[ht]
+\begin{tabular}{rccc}
+\cmidrule[\heavyrulewidth]{2-4}
+ & Lato dominio & Numero passi & T\textsubscript{setup} (\textit{s})\\
+ \cmidrule[\lightrulewidth]{2-4}
+ seriale & \multirow{2}{*}{512} & \multirow{2}{*}{1000} & 0.00337177\\
+ parallelizzato &&& 0.00454419\\
+\cmidrule[\heavyrulewidth]{2-4}
 \end{tabular}
-\end{center}
+\caption{caption}
+\end{table}
 
 Tale comportamento può essere dovuto ad un ulteriore carico di lavoro assegnato
 allo scheduler per un'attività che mal si presta (soprattutto per l'accesso ai
 lati sinistro e destro del dominio a causa dell'accesso in memoria) ad essere
 parallelizzata.
+
+Tutte le principali operazioni (incremento, conteggio, propagazione e calcolo
+energia media) contengono dei costrutti \texttt{for} che sono stati
+parallelizzati mediante la direttiva OpenMP \texttt{omp parallel for}.
+In tale modo il carico di lavoro del ciclo a cui è applicata la direttiva viene
+suddiviso tra i thread che concorrono all'esecuzione del programma, realizzando
+la vera e propria parallelizzazione.
+
+Nelle operazioni di conteggio e di calcolo dell'energia è stato inoltre
+introdotto l'operatore di riduzione somma sulle rispettive variabili, in modo
+tale da calcolare le somme in modo parallelo all'interno dei blocchi OpenMP\@.
+
+\subsubsection{Altre ottimizzazioni}
+
+\paragraph{collapse}
+
+È stato valutato l'utilizzo dell'operatore OpenMP \texttt{collapse(2)} sui cicli
+\texttt{for} innestati per collassare le due iterazioni in una, allargando lo
+spazio di iterazione come da specifiche\cite{openmp2018reference}.
+
+Tale direttiva ha tuttavia causato un degrado delle prestazioni (si veda la
+tabella che segue) e pertanto non è stata implementata nella soluzione proposta.
+
+\begin{table}[ht]
+\begin{tabularx}{\linewidth}{rXXXXX}
+\cmidrule[\heavyrulewidth]{2-6}
+& Lato dom. & \# passi & $\overline{T}$\textsubscript{3-run}(\textit{s})
+& cache-references (M/sec) & cache-misses (\%)*\\
+\cmidrule[\lightrulewidth]{2-6}
+senza \texttt{collapse(2)} & \multirow{2}{*}{256} & \multirow{2}{*}{100000} &
+   13.33183 & 0.770 & 0.390\\
+\cmidrule{4-6}
+   con \texttt{collapse(2)} &&& 19.18336 & 0.560 & 0.402\\
+\cmidrule[\heavyrulewidth]{2-6}
+\end{tabularx}
+\caption{caption}
+\end{table}
+
+*: of all cache refs.
+
+Dai dati presenti in tabella è possibile osservare che, al contrario di come ci
+si aspetterebbe, nonostante la direttiva \texttt{collapse} possa modificare i
+\textit{chunk} di memoria a cui si accede, ciò non comporta un peggioramento
+delle prestazioni nell'accesso alla memoria cache.
+
+Di conseguenza si ipotizza che il degradamento delle prestazioni possa essere
+legato ad una cattiva gestione da parte dello scheduler nell'organizzare il
+lavoro dei thread.
+
+\paragraph{scheduler}
+
+È stato valutato anche l'utilizzo dell'operatore \texttt{scheduler}, testando il
+parametro \texttt{type} nelle sue varianti \texttt{static}, \texttt{dynamic},
+\texttt{guided}.
+Si rimanda alle specifiche \cite{openmp2018reference} per ulteriori dettagli su
+tale operatore.
+
+Dopo aver condotto svariate prove si è riscontrato un aumento significativo
+delle prestazioni impostando uno scheduling statico con dimensione dei blocchi
+di 8.
+
+La tabella \ref{tab:scheduler} mostra la differenza di tempistiche medie (su 3
+esecuzioni) tra la versione in cui il parametro \texttt{scheduler} non è
+specificato e quella in cui viene usato con parametri \texttt{static, 8}.
+
+\begin{table}[ht]
+\begin{tabularx}{\linewidth}{XXXX}
+\toprule
+Lato dom. & \# passi & $\overline{T}$\textsubscript{3-run}(\textit{s})&
+$\overline{T}$\textsubscript{3-run}(\textit{s}) con \texttt{scheduler(static,8)}\\
+\midrule
+ 256 & \multirow{3}{*}{100000} & 12.9581 & 10.3148 \\
+ 512 && 50.4409 & 40.5048 \\
+ 1024 && 250.4084 & 177.2195 \\
+\bottomrule
+\end{tabularx}
+\caption{\label{tab:scheduler}Comparazione delle tempistiche di esecuzione
+applicando uno scheduling statico.}
+\end{table}
+
+Tale direttiva ha quindi permesso una importante riduzione delle tempistiche,
+compresa tra il 20 e il 30\% in meno rispetto alla precedente versione già
+parallelizzata.
+
+Altri tipi di scheduling o diverse dimensioni dei \textit{chunk} hanno
+pareggiato o addirittura peggiorato le precedenti tempistiche.
+
+%Poiché le quattro operazioni fondamentali necessitano di essere eseguite in uno
+%specifico ordine, non è stato possibile valutare altre ottimizzazioni o API
+%di OpenMP per ottimizzare l'esecuzione.
+%La principale è \texttt{parallel for}.
 
 \subsection{Implementazione CUDA}
 
