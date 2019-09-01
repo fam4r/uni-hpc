@@ -61,6 +61,9 @@
 /* dimensione halo */
 #define HALO 1
 
+#define SCHED_TYPE static
+#define SCHED_SIZE 8
+
 /**
  * Restituisce un puntatore all'elemento di coordinate (i,j) del
  * dominio grid con n colonne.
@@ -124,7 +127,7 @@ void setup( float* grid, int n, float fmin, float fmax )
 void increment_energy( float *grid, int n, float delta )
 {
     /* Only add delta for internal (NO HALO) matrix cells */
-#pragma omp parallel for default(none) shared(n,delta,grid)
+#pragma omp parallel for default(none) shared(n,delta,grid) schedule(SCHED_TYPE, SCHED_SIZE)
     for (int i = HALO; i < n - HALO; i++) {
         for (int j = HALO; j < n - HALO; j++) {
             *IDX(grid, i, j, n) += delta;
@@ -140,7 +143,7 @@ int count_cells( float *grid, int n )
 {
     /* Looping the internal (NO HALO) matrix */
     int c = 0;
-#pragma omp parallel for default(none) shared(n,grid) reduction(+:c)
+#pragma omp parallel for default(none) shared(n,grid) reduction(+:c) schedule(SCHED_TYPE, SCHED_SIZE)
     for (int i = HALO; i < n - HALO; i++) {
         for (int j = HALO; j < n - HALO; j++) {
             if ( *IDX(grid, i, j, n) > EMAX ) {
@@ -160,7 +163,7 @@ int count_cells( float *grid, int n )
 void propagate_energy( float *cur, float *next, int n )
 {
     const float FDELTA = EMAX/4;
-#pragma omp parallel for default(none) shared(n,cur,next) collapse(2)
+#pragma omp parallel for default(none) shared(n,cur,next) schedule(SCHED_TYPE, SCHED_SIZE)
     for (int i = HALO; i < n - HALO; i++) {
         for (int j = HALO; j < n - HALO; j++) {
             float F = *IDX(cur, i, j, n);
@@ -197,7 +200,7 @@ void propagate_energy( float *cur, float *next, int n )
 float average_energy(float *grid, int n)
 {
     float sum = 0.0f;
-#pragma omp parallel for default(none) shared(n,grid) reduction(+:sum)
+#pragma omp parallel for default(none) shared(n,grid) reduction(+:sum) schedule(SCHED_TYPE, SCHED_SIZE)
     for (int i = HALO; i < n - HALO; i++) {
         for (int j = HALO; j < n - HALO; j++) {
             sum += *IDX(grid, i, j, n);
