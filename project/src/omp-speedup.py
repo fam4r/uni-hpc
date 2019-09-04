@@ -33,7 +33,8 @@ def compute_weak_scaling():
         for k in range(1, n_run + 1):
             out_file = "/dev/null"
             res_file = "res_weak{}_{}".format(i, k)
-            p_size_weak = round(math.pow(math.log((weak_psize ** 3) * i), 1/3), 4)
+            # e(l($N0 * $N0 * $N0 * $p)/3)
+            p_size_weak = round((weak_psize**3) * i)**(1./3.), 4)
             logging.info("run #{}: L{}, {} thread".format(k, p_size_weak, i))
             res_file = "res_weak{}_{}".format(i, k)
             os.system("OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}"
