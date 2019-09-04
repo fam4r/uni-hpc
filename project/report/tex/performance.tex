@@ -15,8 +15,7 @@ Il calcolo dello speedup viene eseguito mediante la seguente formula:
 \]
 
 in cui:
-
-\begin{center}
+\begin{table}[ht]
 \begin{tabular}{lll}
     p & : & \# processori/core\\
     T\textsubscript{serial}& : & tempo di esecuzione della porzione seriale
@@ -24,7 +23,7 @@ in cui:
     T\textsubscript{parallel}(\textit{p}) & : & tempo di esecuzione della porzione con
     \textit{p} processori/core
 \end{tabular}
-\end{center}
+\end{table}
 
 Poiché l'implementazione della soluzione contiene porzioni di codice non
 parallelizzabili (si veda la funzione \texttt{setup}), dovremmo considerare
@@ -65,6 +64,29 @@ codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
 Per le siffatte osservazioni, considereremo
 T\textsubscript{parallel}(\textit{p}) in tal modo:
 
-\[ 
+\[
 T_{parallel}(p) = \frac{T_{serial}}{p}.
 \]
+
+\subsection{Strong scaling}
+
+TODO
+
+\subsection{Weak scaling}
+
+TODO
+
+\[
+W(p) = \frac{T_{1}}{T_{p}}
+\]
+
+in cui:
+\begin{table}[ht]
+\begin{tabular}{lll}
+    p &: & \# processori/core\\
+    T\textsubscript{1}&: & tempo di esecuzione di una unità di lavoro con un
+    processore/core\\
+    T\textsubscript{p}&: & tempo di esecuzione di \textit{p} unità di lavoro con
+    \textit{p} processori/core
+\end{tabular}
+\end{table}
