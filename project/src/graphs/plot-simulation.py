@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
+in_file = 'data/cuda-simulation.dat'
+out_file = 'cuda-earthquake.png'
+
 x = []
 y1 = []
 y2 = []
@@ -11,7 +14,7 @@ i = 0
 
 fig, (ax1, ax2) = plt.subplots(2, sharex=True, gridspec_kw={'hspace': 0.4})
 
-with open('data/omp-simulation.dat','r') as csvfile:
+with open(in_file,'r') as csvfile:
     plots = csv.reader(csvfile, delimiter=' ')
     for row in plots:
         x.append(i)
@@ -43,4 +46,4 @@ ax2.yaxis.set_ticks(np.arange(start, end + 5, step=5))
 # plt.show() # DEBUG
 
 # save to file
-plt.savefig('omp-earthquake.png')
+plt.savefig(out_file)
