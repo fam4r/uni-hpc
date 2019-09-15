@@ -131,6 +131,16 @@ Run tests:
 feh omp-weak.png
 ```
 
+Understanding professor's script:
+
+```
+N0=256
+# p from 1 to 64 for example
+PROB_SIZE=`echo -e "e(l($N0 * $N0 * $N0 * $p)/3)" | bc -l -q`
+```
+
+See: http://phodd.net/gnu-bc/bcfaq.html
+
 ## CUDA
 
 Compile:
@@ -160,3 +170,21 @@ cd graphs
 feh cuda-earthquake.png
 #./plot-simulation.sh omp-simulation.dat omp-earthquake.png
 ```
+
+## Performance evaluation script
+
+Made for problems involving matrixes, but built for general-purpose uses.
+
+Program timings **must** be managed and printed by the program itself, since a
+wrapper script like that one cannot separately consider the serial and the
+parallel portions of the execution time.
+
+### Features
+
+- supports multiple domain size (matrix size)
+- computes average execution time (by running the program N times)
+- computes speedup
+- computes strong scaling
+- computes weak scaling
+- saves computation results into CSV files (easy to plot!)
+- verbose logging
