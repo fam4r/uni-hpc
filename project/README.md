@@ -38,7 +38,7 @@ get results from Unibo servers.
 
 Provide a proper ssh configuration, like:
 
-```
+```ssh-config
 Host uniomp unicuda uniext
     User [redacted]
 
@@ -56,7 +56,7 @@ so you can use commands like `runcuda`.
 
 Compile:
 
-```
+```bash
 cd src
 make clean
 make openmp
@@ -64,7 +64,7 @@ make openmp
 
 Run simulation:
 
-```
+```bash
 ./omp-earthquake [nsteps [n]] > graphs/data/omp-simulation.dat
 
 # example
@@ -73,7 +73,7 @@ Run simulation:
 
 Plot simulation results:
 
-```
+```bash
 cd graphs
 ./plot-simulation.py
 feh omp-earthquake.png
@@ -87,7 +87,7 @@ Formula: Tserial / Tparallel
 
 Run speedup calculation (takes some time):
 
-```
+```bash
 cd src
 ./omp-speedup.sh 1>graphics/data/omp-speedup.dat 2>graphics/data/omp-strong.dat
 ```
@@ -101,7 +101,7 @@ cd src
 
 Plot speedup graphics:
 
-```
+```bash
 cd graphics
 ./plot-speedup.py
 feh omp-speedup.png
@@ -113,7 +113,7 @@ Formula: Speedup / n\_threads
 
 Strong efficiency data has been calculated in the speedup script.
 
-```
+```bash
 cd graphics
 ./plot-strong.py
 feh omp-strong.png
@@ -125,7 +125,7 @@ Formula: T1 / Tp
 
 Run tests:
 
-```
+```bash
 ./omp-weak-scaling.sh > graphics/data/omp-weak.dat
 ./plot-weak.py
 feh omp-weak.png
@@ -135,7 +135,7 @@ feh omp-weak.png
 
 Compile:
 
-```
+```bash
 cd src
 make clean
 make cuda
@@ -143,7 +143,7 @@ make cuda
 
 Run simulation:
 
-```
+```bash
 ./cuda-earthquake [nsteps [n]] > graphs/data/cuda-simulation.dat
 
 # example
@@ -154,7 +154,7 @@ Run simulation:
 
 Plot simulation results:
 
-```
+```bash
 cd graphs
 ./plot-simulation.py
 feh cuda-earthquake.png
