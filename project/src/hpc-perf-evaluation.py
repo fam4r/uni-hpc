@@ -23,11 +23,13 @@ weak_psize = 256
 # csv info
 speedup_filename = "graphs/data/omp-simulation-py.dat"
 strong_filename = "graphs/data/omp-strong-py.dat"
+weak_filename = "graphs/data/omp-weak-py.dat"
 
 weak_scaling = dict()
 
 
 def compute_weak_scaling():
+    logging.info("###################### WEAK SCALING #######################")
     for i in range(1, n_threads[len(n_threads) - 1] + 1):
         avg_exe_time = 0
         for k in range(1, n_run + 1):
@@ -40,9 +42,9 @@ def compute_weak_scaling():
             os.system("OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
                 i, exe_name, steps, p_size_weak, out_file, res_file))
             with open(res_file) as f:
-                for l in f:
-                    if "parallel" in l:
-                        exe_time = float(l.split(':')[1].split(' ')[1])
+                for line in f:
+                    if "parallel" in line:
+                        exe_time = float(line.split(':')[1].split(' ')[1])
                         logging.info("exe_time #{} = {}".format(k, exe_time))
                         avg_exe_time += exe_time
                         logging.info("avg_exe_time #{} = {}".format(
@@ -64,6 +66,7 @@ for i in n_threads:  # for each number of threads
     strong_scaling[i] = dict()
 
 # run speedup / strong
+logging.info("################## SPEEDUP & STRONG SCALING ###################")
 for i in n_threads:  # for each number of threads
     for j in p_size:  # for each problem size
         avg_exe_time = 0
@@ -74,9 +77,9 @@ for i in n_threads:  # for each number of threads
             os.system("OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
                 i, exe_name, steps, j, out_file, res_file))
             with open(res_file) as f:
-                for l in f:
-                    if "parallel" in l:
-                        exe_time = float(l.split(':')[1].split(' ')[1])
+                for line in f:
+                    if "parallel" in line:
+                        exe_time = float(line.split(':')[1].split(' ')[1])
                         logging.info("exe_time #{} = {}".format(k, exe_time))
                         avg_exe_time += exe_time
                         logging.info("avg_exe_time #{} = {}".format(
@@ -91,25 +94,33 @@ for i in n_threads:  # for each number of threads
         strong_scaling[i][j] = round(float(speedup[i][j] / i), 4)
         logging.info("strong_scaling = {}".format(strong_scaling))
 
-with open(speedup_filename,
-          mode='w') as speedup_file, open(strong_filename,
-                                          mode='w') as strong_file:
-    # speedup
+logging.info("####################### SAVING TO FILE ########################")
+with open(speedup_filename, mode='w') as speedup_file:
     speedup_fieldnames = ['THREAD']
     speedup_fieldnames += p_size
     speedup_writer = csv.DictWriter(speedup_file, speedup_fieldnames)
     speedup_writer.writeheader()
-
-    # strong efficiency
-    strong_fieldnames = ['THREAD']
-    strong_fieldnames += p_size
-    strong_writer = csv.DictWriter(strong_file, strong_fieldnames)
-    strong_writer.writeheader()
-
     for i in n_threads:
         row = speedup[i]
         row["THREAD"] = i
         speedup_writer.writerow(row)
+
+with open(strong_filename, mode='w') as strong_file:
+    strong_fieldnames = ['THREAD']
+    strong_fieldnames += p_size
+    strong_writer = csv.DictWriter(strong_file, strong_fieldnames)
+    strong_writer.writeheader()
+    for i in n_threads:
         row = strong_scaling[i]
         row["THREAD"] = i
         strong_writer.writerow(row)
+
+with open(weak_filename, mode='w') as weak_file:
+    weak_fieldnames = ['p', 'WEAK']
+    weak_writer = csv.DictWriter(weak_file, weak_fieldnames)
+    weak_writer.writeheader()
+    row = dict()
+    for i in range(1, n_threads[len(n_threads) - 1] + 1):
+        row["p"] = i
+        row["WEAK"] = weak_scaling[i]
+        weak_writer.writerow(row)
