@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
-in_file = "./data/cuda-simulation.dat"
-out_file = "./graphs/cuda-earthquake.png"
+in_file = "./data/omp-simulation.dat"
+out_file = "./graphs/omp-earthquake.png"
 
 x = []
 y1 = []

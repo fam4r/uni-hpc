@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import csv
 
-in_file = "./data/omp-speedup-py.csv"
-out_file = "./graphs/omp-speedup.png"
+in_file = "./data/omp-timings-py.csv"
+out_file = "./graphs/omp-timings.png"
 
 # Read in csv. Use names=True to also store column headers
 per_data = np.genfromtxt(in_file, delimiter=',', names=True)
@@ -19,8 +19,8 @@ for name in per_data.dtype.names[1:]:
 plt.legend(loc=0, title='Lato dominio')
 
 plt.xlabel('# Threads')
-plt.ylabel('Speedup')
-plt.title('Speedup OpenMP')
+plt.ylabel('Secondi')
+plt.title('Tempistiche OpenMP')
 plt.grid()
 
 # show origin
@@ -30,7 +30,4 @@ plt.ylim(bottom=0)
 # axis ticks
 plt.xticks(per_data['THREAD'])
 
-# plt.show()  # DEBUG
-
-# save to file
-plt.savefig(out_file)
+plt.show()

@@ -3,8 +3,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-in_file = "./data/omp-speedup-py.csv"
-out_file = "./graphs/omp-speedup.png"
+in_file = "./data/omp-weak-py.csv"
+out_file = "./graphs/omp-weak.png"
 
 # Read in csv. Use names=True to also store column headers
 per_data = np.genfromtxt(in_file, delimiter=',', names=True)
@@ -13,14 +13,11 @@ per_data = np.genfromtxt(in_file, delimiter=',', names=True)
 # skip that one
 for name in per_data.dtype.names[1:]:
     # Set the line's label to the column name
-    plt.plot(per_data['THREAD'], per_data[name], label=name)
-
-# Add a legend
-plt.legend(loc=0, title='Lato dominio')
+    plt.plot(per_data['p'], per_data[name], label=name)
 
 plt.xlabel('# Threads')
-plt.ylabel('Speedup')
-plt.title('Speedup OpenMP')
+plt.ylabel('Weak scaling')
+plt.title('Weak scaling OpenMP')
 plt.grid()
 
 # show origin
@@ -28,9 +25,9 @@ plt.xlim(left=0)
 plt.ylim(bottom=0)
 
 # axis ticks
-plt.xticks(per_data['THREAD'])
+plt.xticks(per_data['p'])
 
-# plt.show()  # DEBUG
+plt.show()  # DEBUG
 
 # save to file
-plt.savefig(out_file)
+# plt.savefig(out_file)
