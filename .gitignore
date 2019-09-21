@@ -3,6 +3,7 @@ project/src/cuda-earthquake
 project/src/earthquake
 project/src/omp-earthquake
 project/src/out
+project/src/data/
 
 # Created by https://www.gitignore.io/api/c,git,cuda,linux,latex
 # Edit at https://www.gitignore.io/?templates=c,git,cuda,linux,latex
