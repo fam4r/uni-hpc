@@ -13,7 +13,11 @@ function recvomp() {
 function runomp() {
     sendomp
     computeomp
-    recvomp
+    if [[ $? == 0 ]]; then
+        recvomp
+    else
+        echo "execution failed, not sending results..."
+    fi
 }
 
 function sendcuda() {
