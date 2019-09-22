@@ -1,10 +1,15 @@
 \section{Valutazione prestazioni}
 AMD Opteron (tm) Processor 6376 8 core 16 thread.
 
-
 Le tempistiche indicate sono state tutte ottenute mediante le funzioni di
 libreria messe a disposizione dal docente. Per ulteriori informazioni si
 consulti il codice sorgente.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.7]{./graphs/omp-timings.png}
+  \caption{Comparazione tempistiche di esecuzione in OpenMP.}\label{fig:timings1}
+\end{figure}
 
 \subsection{Speedup}
 
@@ -68,13 +73,31 @@ T\textsubscript{parallel}(\textit{p}) in tal modo:
 T_{parallel}(p) = \frac{T_{serial}}{p}.
 \]
 
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.7]{./graphs/omp-speedup.png}
+  \caption{Grafico dello speedup.}\label{fig:speedup1}
+\end{figure}
+
+\newpage
+
 \subsection{Strong scaling}
 
-TODO
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.7]{./graphs/omp-strong.png}
+  \caption{Grafico dello strong scaling.}\label{fig:strong1}
+\end{figure}
 
 \subsection{Weak scaling}
 
-TODO
+Dimensione del dominio:
+
+\[
+side(p) = 256 \cdot \sqrt[3]{p}
+\]
+
+come mostrato negli script di esempio del docente.
 
 \[
 W(p) = \frac{T_{1}}{T_{p}}
@@ -90,3 +113,9 @@ in cui:
     \textit{p} processori/core
 \end{tabular}
 \end{table}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.7]{./graphs/omp-weak.png}
+  \caption{Grafico dello weak scaling.}\label{fig:weak1}
+\end{figure}
