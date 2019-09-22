@@ -14,8 +14,17 @@
 \usepackage{bookmark}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage[ddmmyyyy]{datetime}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+
 \graphicspath{{./img/}}
-\hypersetup{pdftitle={Relazione di progetto-High Performance Computing},
+\hypersetup{pdftitle={Progetto di High Performance Computing},
     pdfauthor={Fabrizio Margotta},
     pdfkeywords={hpc, openmp, cuda}
 }
@@ -24,15 +33,14 @@
 
 \begin{document}
 
-\title{Relazione di progetto\\
-     Corso di High Performance Computing}
+\title{Progetto di High Performance Computing}
 \author{Fabrizio Margotta
 (\href{mailto:fabrizio.margotta@studio.unibo.it}{fabrizio.margotta@studio.unibo.it})\\
     Matricola 789072\\
     \\
   Alma Mater Studiorum-Università di Bologna\\}
 % \subtitle{Programmazione di Reti - Progetto di gruppo}
-\date{2019--08--24}
+\date{\today}
 
 \maketitle \thispagestyle{empty}
 \input{./tex/abstract.tex}
