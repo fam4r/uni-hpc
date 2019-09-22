@@ -33,11 +33,11 @@ del codice sorgente.
 
 \subsection{Implementazione OpenMP}
 
-\subsubsection{Parallelizzazione della versione seriale}
+\subsubsection{Modifiche alla versione seriale}
 
-L'inizializzazione della ghost area a zero non è stata parallelizzata poiché i
-test effettuati hanno mostrato un degradamento, seppur minimo, delle
-prestazioni. Si noti il confronto nella tabella di seguito:
+\paragraph{setup}L'inizializzazione della ghost area a zero non è stata
+parallelizzata poiché i test effettuati hanno mostrato un degradamento, seppur
+minimo, delle prestazioni. Si noti il confronto nella tabella di seguito:
 
 \begin{table}[ht]
 \begin{tabular}{rccc}
@@ -67,7 +67,7 @@ Nelle operazioni di conteggio e di calcolo dell'energia è stato inoltre
 introdotto l'operatore di riduzione somma sulle rispettive variabili, in modo
 tale da calcolare le somme in modo parallelo all'interno dei blocchi OpenMP\@.
 
-\subsubsection{Altre ottimizzazioni}
+\subsubsection{Ulteriori ottimizzazioni}
 
 \paragraph{collapse}
 
@@ -146,6 +146,15 @@ pareggiato o addirittura peggiorato le precedenti tempistiche.
 %specifico ordine, non è stato possibile valutare altre ottimizzazioni o API
 %di OpenMP per ottimizzare l'esecuzione.
 %La principale è \texttt{parallel for}.
+
+Risultati dell'implementazione: segue in figura un grafico che mostra
+l'andamento della simulazione.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.7]{./graphs/omp-earthquake.png}
+  \caption{Risultato della simulazione.}\label{fig:simulation1}
+\end{figure}
 
 \subsection{Implementazione CUDA}
 
