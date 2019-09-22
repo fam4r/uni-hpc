@@ -141,11 +141,11 @@ void propagate_energy( float *cur, float *next, int n )
             /* Se l'energia del vicino di sinistra (se esiste) e'
                maggiore di EMAX, allora la cella (i,j) ricevera'
                energia addizionale FDELTA = EMAX/4 */
-            if ((j>0) && (*IDX(cur, i, j-1, n) > EMAX)) { F += FDELTA; }
+            if ((j>0)   && (*IDX(cur, i, j-1, n) > EMAX)) { F += FDELTA; }
             /* Idem per il vicino di destra */
             if ((j<n-1) && (*IDX(cur, i, j+1, n) > EMAX)) { F += FDELTA; }
             /* Idem per il vicino in alto */
-            if ((i>0) && (*IDX(cur, i-1, j, n) > EMAX)) { F += FDELTA; }
+            if ((i>0)   && (*IDX(cur, i-1, j, n) > EMAX)) { F += FDELTA; }
             /* Idem per il vicino in basso */
             if ((i<n-1) && (*IDX(cur, i+1, j, n) > EMAX)) { F += FDELTA; }
 
