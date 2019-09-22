@@ -27,7 +27,7 @@ plt.ylim(bottom=0)
 # axis ticks
 plt.xticks(per_data['p'])
 
-plt.show()  # DEBUG
+# plt.show()  # DEBUG
 
 # save to file
-# plt.savefig(out_file)
+plt.savefig(out_file)

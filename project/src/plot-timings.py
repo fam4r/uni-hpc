@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
 import matplotlib.pyplot as plt
-import csv
 
 in_file = "./data/omp-timings-py.csv"
 out_file = "./graphs/omp-timings.png"
@@ -30,4 +29,7 @@ plt.ylim(bottom=0)
 # axis ticks
 plt.xticks(per_data['THREAD'])
 
-plt.show()
+# plt.show()
+
+# save to file
+plt.savefig(out_file)
