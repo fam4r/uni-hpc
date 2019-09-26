@@ -4,10 +4,23 @@
 
 Entrambe le soluzioni proposte si avvalgono dell'utilizzo di una ghost area
 inizializzata a zero (e mai più modificata).
-Ciò permette di snellire notevolmente l'impatto sulle prestazioni
-dell'operazione di propagazione, poiché, essendoci una regione di intorno
-(\textit{halo}) al dominio, non sarà più necessario controllare che le celle
-adiacenti a quella presa in esame siano ai bordi del dominio stesso.
+
+Ciò permette di ridurre notevolmente l'impatto sulle prestazioni
+dell'operazione di propagazione, poiché, avendo una nuova regione di celle
+intorno al dominio, non sarà più necessario controllare che le celle adiacenti a
+quella presa in esame siano ai bordi del dominio stesso.
+Il valore delle ghost cell (zero), inoltre, non influirà sui risultati delle
+operazioni dell'algoritmo.
+
+In figura \ref{fig:ghostarea}(\cite{marzollaghost}) è possibile osservare il comportamento appena
+descritto.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.3]{./ghost-area.png}
+  \caption{Rappresentazione della ghost area (celle
+  grigie).}\label{fig:ghostarea}
+\end{figure}
 
 \subsection{Accesso in memoria al dominio}
 
@@ -25,8 +38,7 @@ for (int i = 0; i < n; i++) {
 }
 \end{minted}
 
-Tuttavia, l'introduzione della ghost area atta a ridurre l'impatto di
-prestazioni in altre aree della soluzione proposta ha reso preferibile (in
+Tuttavia, l'introduzione della \textit{ghost area} ha reso preferibile (in
 termini di gestione dell'accesso alla memoria) l'utilizzo della funzione
 \texttt{IDX}, che contribuisce inoltre ad una buona comprensione e leggibilità
 del codice sorgente.
@@ -36,10 +48,12 @@ del codice sorgente.
 \subsubsection{Modifiche alla versione seriale}
 
 \paragraph{setup}L'inizializzazione della ghost area a zero non è stata
-parallelizzata poiché i test effettuati hanno mostrato un degradamento, seppur
-minimo, delle prestazioni. Si noti il confronto nella tabella di seguito:
+parallelizzata poiché i test effettuati e mostrati nella tabella
+\ref{tab:parallelghostarea} hanno evidenziato un degradamento, seppur minimo,
+delle prestazioni.
 
 \begin{table}[ht]
+\centering
 \begin{tabular}{rccc}
 \cmidrule[\heavyrulewidth]{2-4}
  & Lato dominio & Numero passi & T\textsubscript{setup} (\textit{s})\\
@@ -48,7 +62,8 @@ minimo, delle prestazioni. Si noti il confronto nella tabella di seguito:
  parallelizzato &&& 0.00454419\\
 \cmidrule[\heavyrulewidth]{2-4}
 \end{tabular}
-\caption{caption}
+\caption{\label{tab:parallelghostarea}Confronto dei tempi di esecuzione per la
+funzione \texttt{setup} nella versione seriale e nella versione parallelizzata.}
 \end{table}
 
 Tale comportamento può essere dovuto ad un ulteriore carico di lavoro assegnato
@@ -56,27 +71,28 @@ allo scheduler per un'attività che mal si presta (soprattutto per l'accesso ai
 lati sinistro e destro del dominio a causa dell'accesso in memoria) ad essere
 parallelizzata.
 
+\paragraph{altre operazioni}
 Tutte le principali operazioni (incremento, conteggio, propagazione e calcolo
-energia media) contengono dei costrutti \texttt{for} che sono stati
-parallelizzati mediante la direttiva OpenMP \texttt{omp parallel for}.
-In tale modo il carico di lavoro del ciclo a cui è applicata la direttiva viene
+energia media) contengono dei cicli \texttt{for} che sono stati parallelizzati
+utilizzando la direttiva OpenMP \texttt{omp parallel for}.  In tale modo
+l'intero carico di lavoro del ciclo a cui è stato applicato il costrutto viene
 suddiviso tra i thread che concorrono all'esecuzione del programma, realizzando
 la vera e propria parallelizzazione.
 
-Nelle operazioni di conteggio e di calcolo dell'energia è stato inoltre
-introdotto l'operatore di riduzione somma sulle rispettive variabili, in modo
-tale da calcolare le somme in modo parallelo all'interno dei blocchi OpenMP\@.
+Nelle operazioni di conteggio e di calcolo dell'energia media è stata inoltre
+introdotta la clausola di riduzione con l'operatore somma, per poter
+parallelizzare anche le operazioni di somma all'interno delle direttive OpenMP\@.
 
 \subsubsection{Ulteriori ottimizzazioni}
 
 \paragraph{collapse}
 
-È stato valutato l'utilizzo dell'operatore OpenMP \texttt{collapse(2)} sui cicli
+È stato valutato l'utilizzo della clausola \texttt{collapse(2)} sui cicli
 \texttt{for} innestati per collassare le due iterazioni in una, allargando lo
 spazio di iterazione come da specifiche\cite{openmp2018reference}.
 
 Tale direttiva ha tuttavia causato un degrado delle prestazioni (si veda la
-tabella che segue) e pertanto non è stata implementata nella soluzione proposta.
+tabella \ref{tab:collapse}) e pertanto non è stata implementata nella soluzione proposta.
 
 \begin{table}[ht]
 \begin{tabularx}{\linewidth}{rXXXXX}
@@ -90,7 +106,8 @@ senza \texttt{collapse(2)} & \multirow{2}{*}{256} & \multirow{2}{*}{100000} &
    con \texttt{collapse(2)} &&& 19.18336 & 0.560 & 0.402\\
 \cmidrule[\heavyrulewidth]{2-6}
 \end{tabularx}
-\caption{caption}
+\caption{\label{tab:collapse}Dati raccolti sull'esecuzione della simulazione con
+e senza la direttiva \texttt{collapse(2)}.}
 \end{table}
 
 *: of all cache refs.
