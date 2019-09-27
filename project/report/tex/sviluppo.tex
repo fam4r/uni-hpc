@@ -45,6 +45,16 @@ del codice sorgente.
 
 \subsection{Implementazione OpenMP}
 
+In figura \ref{fig:simulation1} è possibile osservare il risultato della
+simulazione in termini di energia media delle celle e numero di celle che hanno
+superato il valore soglia, misurate ad ogni passo di esecuzione.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[scale=0.55]{./graphs/omp-earthquake.png}
+  \caption{Risultato della simulazione.}\label{fig:simulation1}
+\end{figure}
+
 \subsubsection{Modifiche alla versione seriale}
 
 \paragraph{setup}L'inizializzazione della ghost area a zero non è stata
@@ -91,7 +101,7 @@ parallelizzare anche le operazioni di somma all'interno delle direttive OpenMP\@
 \texttt{for} innestati per collassare le due iterazioni in una, allargando lo
 spazio di iterazione come da specifiche\cite{openmp2018reference}.
 
-Tale direttiva ha tuttavia causato un degrado delle prestazioni (si veda la
+Tale clausola ha tuttavia causato un degrado delle prestazioni (si veda la
 tabella \ref{tab:collapse}) e pertanto non è stata implementata nella soluzione proposta.
 
 \begin{table}[ht]
@@ -113,46 +123,46 @@ e senza la direttiva \texttt{collapse(2)}.}
 *: of all cache refs.
 
 Dai dati presenti in tabella è possibile osservare che, al contrario di come ci
-si aspetterebbe, nonostante la direttiva \texttt{collapse} possa modificare i
-\textit{chunk} di memoria a cui si accede, ciò non comporta un peggioramento
-delle prestazioni nell'accesso alla memoria cache.
+si aspetterebbe, nonostante la clausola \texttt{collapse} modifichi i
+\textit{chunk} di memoria a cui si accede, ciò non comporta un degradamento
+significativo delle prestazioni nell'accesso alla memoria cache.
 
-Di conseguenza si ipotizza che il degradamento delle prestazioni possa essere
-legato ad una cattiva gestione da parte dello scheduler nell'organizzare il
-lavoro dei thread.
+Di conseguenza si ipotizza che l'incremento delle tempistiche di esecuzione
+possa essere legato ad una cattiva gestione da parte dello scheduler
+nell'organizzare il lavoro dei thread.
 
-\paragraph{scheduler}
+\paragraph{schedule}
 
-È stato valutato anche l'utilizzo dell'operatore \texttt{scheduler}, testando il
-parametro \texttt{type} nelle sue varianti \texttt{static}, \texttt{dynamic},
-\texttt{guided}.
-Si rimanda alle specifiche \cite{openmp2018reference} per ulteriori dettagli su
-tale operatore.
+È stata inoltre valutata l'adozione della clausola \texttt{schedule},
+utilizzando il parametro \texttt{type} nelle sue varianti \texttt{static},
+\texttt{dynamic} e \texttt{guided}.
+%Si rimanda alle specifiche \cite{openmp2018reference} per ulteriori dettagli su
+%tale operatore.
 
-Dopo aver condotto svariate prove si è riscontrato un aumento significativo
-delle prestazioni impostando uno scheduling statico con dimensione dei blocchi
-di 8.
+Le prove effettuate hanno mostrato un significativo aumento delle prestazioni
+impostando uno scheduling statico con blocchi di dimensione 8.
 
-La tabella \ref{tab:scheduler} mostra la differenza di tempistiche medie (su 3
-esecuzioni) tra la versione in cui il parametro \texttt{scheduler} non è
-specificato e quella in cui viene usato con parametri \texttt{static, 8}.
+La tabella \ref{tab:schedule} mostra la differenza di tempistiche medie (su 3
+esecuzioni) tra la versione in cui la clausola \texttt{schedule} non è
+specificata e quella in cui viene usata con parametri \texttt{static, 8}.
 
 \begin{table}[ht]
-\begin{tabularx}{\linewidth}{XXXX}
+\centering
+\begin{tabularx}{400pt}{XXXX}
 \toprule
 Lato dom. & \# passi & $\overline{T}$\textsubscript{3-run}(\textit{s})&
-$\overline{T}$\textsubscript{3-run}(\textit{s}) con \texttt{scheduler(static,8)}\\
+$\overline{T}$\textsubscript{3-run}(\textit{s}) con \texttt{schedule(static,8)}\\
 \midrule
  256 & \multirow{3}{*}{100000} & 12.9581 & 10.3148 \\
  512 && 50.4409 & 40.5048 \\
  1024 && 250.4084 & 177.2195 \\
 \bottomrule
 \end{tabularx}
-\caption{\label{tab:scheduler}Comparazione delle tempistiche di esecuzione
+\caption{\label{tab:schedule}Comparazione delle tempistiche di esecuzione
 applicando uno scheduling statico.}
 \end{table}
 
-Tale direttiva ha quindi permesso una importante riduzione delle tempistiche,
+Tale clausola ha quindi permesso una importante riduzione delle tempistiche,
 compresa tra il 20 e il 30\% in meno rispetto alla precedente versione già
 parallelizzata.
 
@@ -163,15 +173,6 @@ pareggiato o addirittura peggiorato le precedenti tempistiche.
 %specifico ordine, non è stato possibile valutare altre ottimizzazioni o API
 %di OpenMP per ottimizzare l'esecuzione.
 %La principale è \texttt{parallel for}.
-
-Risultati dell'implementazione: segue in figura un grafico che mostra
-l'andamento della simulazione.
-
-\begin{figure}[h!]
-  \centering
-  \includegraphics[scale=0.7]{./graphs/omp-earthquake.png}
-  \caption{Risultato della simulazione.}\label{fig:simulation1}
-\end{figure}
 
 \subsection{Implementazione CUDA}
 
