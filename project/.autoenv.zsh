@@ -1,5 +1,5 @@
 function sendomp() {
-    scp {Makefile,earthquake.c,omp-earthquake.c,hpc.h} uniomp:/home/local/STUDENTI/fabrizio.margotta/
+    scp {Makefile,earthquake.c,omp-earthquake.c,hpc.h,hpc-perf-evaluation.py} uniomp:/home/local/STUDENTI/fabrizio.margotta/
 }
 
 function computeomp() {
@@ -21,7 +21,7 @@ function runomp() {
 }
 
 function sendcuda() {
-    scp {Makefile,earthquake.c,cuda-earthquake.cu,hpc.h} unicuda:/home/local/STUDENTI/fabrizio.margotta/
+    scp {Makefile,earthquake.c,cuda-earthquake.cu,hpc.h,hpc-perf-evaluation-cuda.py} unicuda:/home/local/STUDENTI/fabrizio.margotta/
 }
 
 function computecuda() {
@@ -32,7 +32,7 @@ function computecuda() {
 }
 
 function recvcuda() {
-    scp unicuda:/home/local/STUDENTI/fabrizio.margotta/out .
+    scp unicuda:/home/local/STUDENTI/fabrizio.margotta/data/cuda-timings-py.csv .
 }
 
 function runcuda() {
