@@ -30,8 +30,8 @@ linguaggio C.
 Ciò avrebbe permesso di scorrere in modo sequenziale la matrice stessa,
 risparmiando le chiamate alla funzione \texttt{IDX}.
 
-Ad esempio, l'operazione di incremento di energia sarebbe stata implementata nel
-seguente modo:
+Ad esempio, l'operazione di incremento di energia sarebbe stata implementata
+come segue:
 \begin{minted}{c}
 for (int i = 0; i < n; i++) {
     grid[i] += delta;
@@ -52,7 +52,8 @@ superato il valore soglia, misurate ad ogni passo di esecuzione.
 \begin{figure}[!ht]
   \centering
   \includegraphics[scale=0.55]{./graphs/omp-earthquake.png}
-  \caption{Risultato della simulazione.}\label{fig:simulation1}
+  \caption{Energia media e numero di celle con energia maggiore di EMAX in un
+  modello BK, n=256, 10\textsuperscript{5} timestep}\label{fig:simulation1}
 \end{figure}
 
 \subsubsection{Modifiche alla versione seriale}
@@ -176,6 +177,28 @@ pareggiato o addirittura peggiorato le precedenti tempistiche.
 
 \subsection{Versione CUDA}
 
+L'approccio all'implementazione della versione CUDA è stato più articolato,
+poiché ha coinvolto l'inizializzazione e l'interazione con il dispositivo, che
+vengono di seguito elencati:
+
+\begin{enumerate}
+    \item modifica delle operazioni dell'algoritmo: ogni funzione esprime il
+        lavoro svolto dal singolo thread
+    \item allocazione delle porzioni di memoria necessarie a contenere il
+        dominio;
+    \item partizionamento del dominio ed indicizzazione dei thread in accordo
+        con il modello di suddivisione del carico di lavoro del dispositivo;
+    \item inizializzazione del dominio e copia delle variabili nella memoria del
+        dispositivo;
+    \item esecuzione delle operazioni dell'algoritmo, se necesario
+        sincronizzando i thread del dispositivo tra un'operazione e l'altra e
+        scambiando i dati relativi all'esecuzione di una singola computazione
+    \item deallocazione della memoria sia sull'\textit{host} che sul
+        \textit{device}
+\end{enumerate}
+
+\subsubsection{Partizionamento del dominio}
+
 Il dominio è stato partizionato, come da suggerimenti, in blocchi 2D organizzati
 a loro volta in griglie 2D.
 
@@ -184,8 +207,11 @@ Per le operazioni effettuate nelle funzioni \texttt{count\_cells} e
 monodimensionali, in accordo con la rappresentazione matriciale nel linguaggio
 di programmazione C.
 
-A tal proposito, per le sopracitate operazioni, è stata opportunamente
-implementata l'operazione di riduzione mediante operatore somma.
+\subsubsection{Riduzione}
 
-In un primo momento, per semplicità, si è proceduto con la realizzazione della
-soluzione senza l'utilizzo della memoria condivisa del Device.
+È stato inoltre adottato il pattern di riduzione con operazione somma mediante
+l'API \textit{atomicAdd}, di fatto interpretando le operazioni di conteggio e di
+calcolo dell'energia media come somma degli elementi di un array.
+
+%In un primo momento, per semplicità, si è proceduto con la realizzazione della
+%soluzione senza l'utilizzo della memoria condivisa del Device.
