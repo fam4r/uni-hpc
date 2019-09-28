@@ -71,65 +71,18 @@ Run simulation:
 ./omp-earthquake 100000 256 > graphs/data/omp-simulation.dat
 ```
 
-Plot simulation results:
-
-```bash
-cd graphs
-./plot-simulation.py
-feh omp-earthquake.png
-```
+Plot simulation results running `plot-simulation.py`. The graph will be located
+at `graphs/omp-earthquake.png`.
 
 ### Performance evaluation
 
-#### Speedup
+Run `hpc-perf-evaluation.py`.
 
-Formula: Tserial / Tparallel
+More info [here](#performance-evaluation-script).
 
-Run speedup calculation (takes some time):
+Results will be available in the `data` folder as CSV files.
 
-```bash
-cd src
-./omp-speedup.sh 1>graphics/data/omp-speedup.dat 2>graphics/data/omp-strong.dat
-```
-
-1) computes the simulation using `#cores` from 1 to `n_cores` * 2 (1, 2,4, 8 , 16...) and for differet matrix sizes (eg. `256`, `512` and `1024`)
-2) takes timing for each computation
-3) calculates the speedup (formula `Tserial / Tparallel`)
-4) calculates the strong efficiency (see [Strong efficiency](#strong-efficiency))
-
-**NOTE**: it ignores the non-parallelizable portion of the simulation (matrix initialization) beacuse it takes negligible timings.
-
-Plot speedup graphics:
-
-```bash
-cd graphics
-./plot-speedup.py
-feh omp-speedup.png
-```
-
-#### Strong efficiency
-
-Formula: Speedup / n\_threads
-
-Strong efficiency data has been calculated in the speedup script.
-
-```bash
-cd graphics
-./plot-strong.py
-feh omp-strong.png
-```
-
-#### Weak efficiency
-
-Formula: T1 / Tp
-
-Run tests:
-
-```bash
-./omp-weak-scaling.sh > graphics/data/omp-weak.dat
-./plot-weak.py
-feh omp-weak.png
-```
+#### Weak scaling
 
 Understanding professor's script:
 
@@ -154,22 +107,22 @@ make cuda
 Run simulation:
 
 ```bash
-./cuda-earthquake [nsteps [n]] > graphs/data/cuda-simulation.dat
+./cuda-earthquake [nsteps [n]] > ./data/cuda-simulation.dat
 
 # example
-./cuda-earthquake 100000 256 > graphs/data/cuda-simulation.dat
+./cuda-earthquake 100000 256 > ./data/cuda-simulation.dat
 ```
 
-----------
+Plot simulation results running `plot-timings-cuda.py`. The graph will be
+located at `graphs/cuda-timings.png`.
 
-Plot simulation results:
+### Performance evaluation
 
-```bash
-cd graphs
-./plot-simulation.py
-feh cuda-earthquake.png
-#./plot-simulation.sh omp-simulation.dat omp-earthquake.png
-```
+Run `hpc-perf-evaluation-cuda.py`.
+
+More info [here](#performance-evaluation-script).
+
+Results will be available in the `data` folder as CSV files.
 
 ## Performance evaluation script
 
