@@ -193,10 +193,10 @@ __global__ void propagate_energy( float *cur, float *next, int n )
     float *out = IDX(next, i, j, n);
 
     if (i < n - HALO && j < n - HALO) {
-        if ((j > 0)     && (*IDX(cur, i, j - 1, n) > EMAX)) { F += FDELTA; }
-        if ((j < n - 1) && (*IDX(cur, i, j + 1, n) > EMAX)) { F += FDELTA; }
-        if ((i > 0)     && (*IDX(cur, i - 1, j, n) > EMAX)) { F += FDELTA; }
-        if ((i < n - 1) && (*IDX(cur, i + 1, j, n) > EMAX)) { F += FDELTA; }
+        if (*IDX(cur, i, j - 1, n) > EMAX) { F += FDELTA; }
+        if (*IDX(cur, i, j + 1, n) > EMAX) { F += FDELTA; }
+        if (*IDX(cur, i - 1, j, n) > EMAX) { F += FDELTA; }
+        if (*IDX(cur, i + 1, j, n) > EMAX) { F += FDELTA; }
 
         if (F > EMAX) {
             F -= EMAX;
