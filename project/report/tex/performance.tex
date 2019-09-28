@@ -1,5 +1,10 @@
 \section{Valutazione prestazioni}
-AMD Opteron (tm) Processor 6376 8 core 16 thread.
+
+I test sono stati effettuati su una macchina equipaggiata con una CPU
+Intel\textregistered\@ Core\texttrademark\@ i7--4710HQ quad core (8 thread) @
+2.50GHz ed una NVIDIA GeForce GTX 860M.
+
+%AMD Opteron (tm) Processor 6376 8 core 16 thread.
 
 Le tempistiche indicate sono state tutte ottenute mediante le funzioni di
 libreria messe a disposizione dal docente. Per ulteriori informazioni si
@@ -7,9 +12,13 @@ consulti il codice sorgente.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.55]{./graphs/omp-timings.png}
+  \includegraphics[scale=0.4]{./graphs/omp-timings.png}
   \caption{Comparazione tempistiche di esecuzione in OpenMP.}\label{fig:timings1}
 \end{figure}
+
+In figura \ref{fig:timings1} è possibile notare che il maggior guadagno si
+registra nell'esecuzione in cui il dominio ha dimensione 1024 e che nelle
+esecuzioni che usano più di 8 thread si ha un incremento di tempistiche.
 
 \subsection{Speedup}
 
@@ -46,12 +55,12 @@ parallelizzabile, calcolato come segue:
 \alpha = \frac{T_{serial}}{T_{serial} + T_{parallel}}.
 \]
 
-Tuttavia, come mostrato nella seguente tabella, la porzione di codice seriale
-(non parallelizzabile) impiega tempo trascurabile rispetto alla porzione di
-codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
+Tuttavia, come mostrato in tabella \ref{tab:alpha}, la porzione di codice
+seriale (non parallelizzabile) impiega tempo trascurabile rispetto alla porzione
+di codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
 
-%\pgfmathparse{0.00140063/(0.00140063 + 14.2519)}\pgfkeys{/pgf/number format/sci}\pgfmathresult
 \begin{table}[ht]
+\centering
 \begin{tabular}{ccccc}
 \toprule
  Lato dominio & Numero passi & T\textsubscript{seriale} (\textit{s}) &
@@ -60,10 +69,9 @@ codice parallelizzata, pertanto anche $\alpha$ assume valore trascurabile.
     256 & \multirow{2}{*}{100000} & 0.00140063 & 14.2519 & 0.00009827 \\
     1024 & & 0.02356447 & 150.2037 & 0.00015686 \\
 \bottomrule
- %s_elapsed/(s_elapsed + p_elapsed)
- %0.00009827
 \end{tabular}
-\caption{caption}
+\caption{Comparazione delle tempistiche per le porzioni seriale e parallele
+dell'algoritmo.\label{tab:alpha}}
 \end{table}
 
 Per le siffatte osservazioni, considereremo
@@ -73,31 +81,37 @@ T\textsubscript{parallel}(\textit{p}) in tal modo:
 T_{parallel}(p) = \frac{T_{serial}}{p}.
 \]
 
+In figura \ref{fig:speedup1} è possibile osservare che lo speedup cresca fino a
+8 thread, mantenendo di fatto la tendenza registrata nella misurazione delle
+tempistiche.
+
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.55]{./graphs/omp-speedup.png}
+  \includegraphics[scale=0.4]{./graphs/omp-speedup.png}
   \caption{Grafico dello speedup.}\label{fig:speedup1}
 \end{figure}
 
-\newpage
+\subsection{Scalabilità forte}
 
-\subsection{Strong scaling}
+La valutazione della scalabilità forte (\textit{strong scaling}), nonché i
+risultati mostrati nel grafico \ref{fig:strong1} sono stati calcolati mediante
+la seguente formula:
+
+\[
+    E(p) = \frac{S(p)}{p} = \frac{T_{serial}}{p \cdot T_{parallel}(p)}.
+\]
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.55]{./graphs/omp-strong.png}
-  \caption{Grafico dello strong scaling.}\label{fig:strong1}
+  \includegraphics[scale=0.4]{./graphs/omp-strong.png}
+  \caption{Grafico della scalabilità forte.}\label{fig:strong1}
 \end{figure}
 
-\subsection{Weak scaling}
+\subsection{Scalabilità debole}
 
-Dimensione del dominio:
-
-\[
-side(p) = 256 \cdot \sqrt[3]{p}
-\]
-
-come mostrato negli script di esempio del docente.
+La valutazione della scalabilità debole (\textit{weak scaling}), nonché i
+risultati mostrati nel grafico \ref{fig:weak1} sono stati calcolati mediante
+la seguente formula:
 
 \[
 W(p) = \frac{T_{1}}{T_{p}}
@@ -114,8 +128,25 @@ in cui:
 \end{tabular}
 \end{table}
 
+Poiché nella valutazione della scalabilità debole, la dimensione del problema è
+proporzionale al numero di processori/core utilizzati, il lato della matrice
+utiizzata nell'algoritmo è stato calcolato come segue:
+
+\[
+side(p) = 256 \cdot \sqrt[3]{p}
+\]
+
+in cui 256 è la dimensione presa come lato di base.
+
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.55]{./graphs/omp-weak.png}
-  \caption{Grafico dello weak scaling.}\label{fig:weak1}
+  \includegraphics[scale=0.4]{./graphs/omp-weak.png}
+  \caption{Grafico della scalabilità debole.}\label{fig:weak1}
 \end{figure}
+
+\subsection{Osservazioni}
+
+fare ancora tutta la parte cuda (tempistiche)
+
+hyperthreading
+dopo gli 8 core
