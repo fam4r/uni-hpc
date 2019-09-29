@@ -12,7 +12,7 @@ quella presa in esame siano ai bordi del dominio stesso.
 Il valore delle ghost cell (zero), inoltre, non influirà sui risultati delle
 operazioni dell'algoritmo.
 
-In figura \ref{fig:ghostarea}(\cite{marzollaghost}) è possibile osservare il
+In figura \ref{fig:ghostarea} (\cite{marzollaghost}) è possibile osservare il
 comportamento appena descritto.
 
 \begin{figure}[!ht]
@@ -46,20 +46,21 @@ del codice sorgente.
 \subsection{Versione OpenMP}
 
 In figura \ref{fig:simulation1} è possibile osservare il risultato della
-simulazione in termini di energia media delle celle e numero di celle che hanno
-superato il valore soglia, misurate ad ogni passo di esecuzione.
+simulazione espresso graficamente come l'andamento dell'energia media delle
+celle e del numero di celle che hanno superato il valore soglia.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[scale=0.55]{./graphs/omp-earthquake.png}
-  \caption{Energia media e numero di celle con energia maggiore di EMAX in un
-  modello BK, n=256, 10\textsuperscript{5} timestep}\label{fig:simulation1}
+  \caption{Energia media e numero di celle con energia maggiore di \texttt{EMAX}
+  in un modello BK, n=256, 10\textsuperscript{5}
+  timestep}\label{fig:simulation1}
 \end{figure}
 
 \subsubsection{Modifiche alla versione seriale}
 
 \paragraph{setup}L'inizializzazione della ghost area a zero non è stata
-parallelizzata poiché i test effettuati e mostrati nella tabella
+parallelizzata poiché i test effettuati e mostrati in tabella
 \ref{tab:parallelghostarea} hanno evidenziato un degradamento, seppur minimo,
 delle prestazioni.
 
@@ -73,8 +74,8 @@ delle prestazioni.
  parallelizzato &&& 0.00454419\\
 \cmidrule[\heavyrulewidth]{2-4}
 \end{tabular}
-\caption{\label{tab:parallelghostarea}Confronto dei tempi di esecuzione per la
-funzione \texttt{setup} nella versione seriale e nella versione parallelizzata.}
+\caption{\label{tab:parallelghostarea}Tempi di esecuzione della funzione
+\texttt{setup} nella versione seriale e nella versione parallelizzata.}
 \end{table}
 
 Tale comportamento può essere dovuto ad un ulteriore carico di lavoro assegnato
@@ -102,14 +103,15 @@ parallelizzare anche le operazioni di somma all'interno delle direttive OpenMP\@
 \texttt{for} innestati per collassare le due iterazioni in una, allargando lo
 spazio di iterazione come da specifiche\cite{openmp2018reference}.
 
-Tale clausola ha tuttavia causato un degrado delle prestazioni (si veda la
-tabella \ref{tab:collapse}) e pertanto non è stata implementata nella soluzione proposta.
+Tale clausola ha tuttavia causato una degradazione di prestazioni (si veda la
+tabella \ref{tab:collapse}) e pertanto non è stata implementata nella soluzione
+proposta.
 
 \begin{table}[ht]
 \begin{tabularx}{\linewidth}{rXXXXX}
 \cmidrule[\heavyrulewidth]{2-6}
-& Lato dom. & \# passi & $\overline{T}$\textsubscript{3-run}(\textit{s})
-& cache-references (M/sec) & cache-misses (\%)*\\
+& Lato dominio & Numero passi & $\overline{T}$\textsubscript{3-run}(\textit{s})
+& cache-references (M/sec) & cache-misses (\%)\footnotemark{}\\
 \cmidrule[\lightrulewidth]{2-6}
 senza \texttt{collapse(2)} & \multirow{2}{*}{256} & \multirow{2}{*}{100000} &
    13.33183 & 0.770 & 0.390\\
@@ -121,7 +123,7 @@ senza \texttt{collapse(2)} & \multirow{2}{*}{256} & \multirow{2}{*}{100000} &
 e senza la direttiva \texttt{collapse(2)}.}
 \end{table}
 
-*: of all cache refs.
+\footnotetext{of all cache refs}
 
 Dai dati presenti in tabella è possibile osservare che, al contrario di come ci
 si aspetterebbe, nonostante la clausola \texttt{collapse} modifichi i
@@ -151,7 +153,7 @@ specificata e quella in cui viene usata con parametri \texttt{static, 8}.
 \centering
 \begin{tabularx}{400pt}{XXXX}
 \toprule
-Lato dom. & \# passi & $\overline{T}$\textsubscript{3-run}(\textit{s})&
+Lato dominio & Numero passi & $\overline{T}$\textsubscript{3-run}(\textit{s})&
 $\overline{T}$\textsubscript{3-run}(\textit{s}) con \texttt{schedule(static,8)}\\
 \midrule
  256 & \multirow{3}{*}{100000} & 12.9581 & 10.3148 \\

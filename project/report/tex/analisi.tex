@@ -1,22 +1,22 @@
 \section{Introduzione}
 
 La realizzazione dell'intero progetto è avvenuta per fasi: inizialmente è stata
-implementata la versione OpenMP, solo in seguito la versione CUDA.
-Per ogni fase si è proceduti allo sviluppo della soluzione proposta per
-raffinamenti successivi (ciclo di design APOD\cite{nvidiaapod}) e, contestualmente, alla
+implementata la versione OpenMP, solo in seguito la versione CUDA.  Per ogni
+fase si è proceduti allo sviluppo della soluzione proposta per raffinamenti
+successivi (ciclo di design APOD\cite{nvidiaapod}) e, contestualmente, alla
 scrittura della relazione.
 
 L'intero progetto è stato gestito seguendo una versione semplificata della
-metodologia Kanban\cite{wiki:kanbandev}, utilizzando opportuni strumenti digitali per
-l'organizzazione delle singole attività di lavoro.
+metodologia Kanban\cite{wiki:kanbandev}, utilizzando opportuni strumenti
+digitali per l'organizzazione delle singole attività di lavoro.
 
 \subsection{Analisi}
 L'analisi sul modello da implementare è stata particolarmente semplificata dalle
 indicazioni fornite dal docente.
 
-Vengono tuttavia di seguito presentate alcune osservazioni sul modello dei dati,
-ad esempio si fa notare che non è presente alcuna particolare dipendenza sui
-dati da parte delle iterazioni dei cicli.
+Vengono tuttavia di seguito presentate alcune osservazioni sul modello dei dati:
+si noti ad esempio che nei cicli non è presente alcuna specifica dipendenza
+sui dati.
 
 Ciò permette quindi di procedere con la parallelizzazione della versione seriale
 fornita dal docente senza particolari problemi.
