@@ -1,5 +1,7 @@
 /****************************************************************************
  *
+ * Fabrizio Margotta 789072
+ *
  * hpc.h - Miscellaneous utility functions for the HPC course
  *
  * Written in 2017 by Moreno Marzolla <moreno.marzolla(at)unibo.it>

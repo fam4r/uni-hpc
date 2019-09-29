@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+# Fabrizio Margotta 789072
+
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
@@ -23,7 +26,7 @@ with open(in_file, 'r') as csvfile:
         i += 1
 
 # 1° sottodiagramma
-ax1.set_title('Average energy')
+ax1.set_title('Energia media')
 ax1.plot(x, y2)
 
 # 2° sottodiagramma

@@ -1,3 +1,5 @@
+# Fabrizio Margotta 789072
+
 ## Makefile per il progetto di High Performance Computing
 ## 2018/2019, corso di laurea in Ingegneria e Scienze Informatiche,
 ## Universita' di Bologna sede di Cesena.

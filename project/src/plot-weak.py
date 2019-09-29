@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Fabrizio Margotta 789072
+
 import matplotlib.pyplot as plt
 import numpy as np
 
