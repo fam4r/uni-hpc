@@ -1,13 +1,26 @@
 \section{Conclusioni}
 
-\subsection{Note di sviluppo}
-Lo sviluppo dell'implementazione del modello è stato accompagnato dalla
-realizzazione di opportuni script orientati a rendere più rapido il testing sul
-server fornito dal docente.
+Tale relazione di progetto vuole portare all'attenzione tutte le fasi di
+realizzazione del progetto stesso: l'analisi del modello, l'implementazione
+delle versioni parallele e la valutazione delle prestazioni seguendo un
+approccio quanto più metodico possibile.
 
-Sono stati infatti realizzati meccanismi per il trasferimento, compilazione,
-esecuzione e ottenimento dei risultati da/verso il server utilizzando il
-programma \texttt{scp} e l'opzione \texttt{ProxyJump} di ssh.
-A tal proposito si consultino i file \texttt{.autoenv.zsh} e \texttt{README.md}
-del progetto ove è possibile trovare indicazioni e dettagli tecnici su come
-sfruttare il meccanismo ideato.
+Ogni sezione della relazione è inoltre accompagnata da considerazioni svolte
+durante l'implementazione stessa, come, ad esempio, l'utilizzo di pattern,
+clausole o l'adozione di una variante di una formula piuttosto che un'altra in
+base a determinate condizioni.  Tali scelte sono state inoltre motivate con dati
+raccolti durante le varie verifiche in corso d'opera.
+
+\subsection{Note di sviluppo}
+
+Sono stati realizzati diversi script che facilitano ed automatizzano
+l'esecuzione su server remoti e la valutazione delle prestazioni.
+
+Possono risultare di interesse i meccanismi ideati per trasferire, compilare,
+eseguire l'algoritmo e scaricare i risultati da/verso server remoti utilizzando
+il comando \texttt{scp} e l'opzione \texttt{ProxyJump} di SSH.
+
+In ultimo sono stati realizzati degli script per l'automatizzazione del calcolo
+dei parametri prestazionali quali tempistiche, speedup e scalabilità.
+
+Si consultino i sorgenti per maggiori informazioni.

@@ -12,8 +12,8 @@ quella presa in esame siano ai bordi del dominio stesso.
 Il valore delle ghost cell (zero), inoltre, non influirà sui risultati delle
 operazioni dell'algoritmo.
 
-In figura \ref{fig:ghostarea}(\cite{marzollaghost}) è possibile osservare il comportamento appena
-descritto.
+In figura \ref{fig:ghostarea}(\cite{marzollaghost}) è possibile osservare il
+comportamento appena descritto.
 
 \begin{figure}[!ht]
   \centering
@@ -178,8 +178,9 @@ pareggiato o addirittura peggiorato le precedenti tempistiche.
 \subsection{Versione CUDA}
 
 L'approccio all'implementazione della versione CUDA è stato più articolato,
-poiché ha coinvolto l'inizializzazione e l'interazione con il dispositivo, che
-vengono di seguito elencati:
+poiché ha coinvolto l'inizializzazione e l'interazione con il dispositivo.
+Di seguito si riporta il flusso di lavoro adottato nella programmazione della
+versione CUDA della soluzione proposta:
 
 \begin{enumerate}
     \item modifica delle operazioni dell'algoritmo: ogni funzione esprime il
@@ -210,7 +211,7 @@ di programmazione C.
 \subsubsection{Riduzione}
 
 È stato inoltre adottato il pattern di riduzione con operazione somma mediante
-l'API \textit{atomicAdd}, di fatto interpretando le operazioni di conteggio e di
+l'API \texttt{atomicAdd}, di fatto interpretando le operazioni di conteggio e di
 calcolo dell'energia media come somma degli elementi di un array.
 
 %In un primo momento, per semplicità, si è proceduto con la realizzazione della

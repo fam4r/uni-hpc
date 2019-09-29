@@ -1,10 +1,13 @@
 \section{Valutazione prestazioni}
 
-I test sono stati effettuati su una macchina equipaggiata con una CPU
-Intel\textregistered\@ Core\texttrademark\@ i7--4710HQ quad core (8 thread) @
-2.50GHz ed una NVIDIA GeForce GTX 860M.
+I test della versione OpenMP sono stati effettuati su una macchina equipaggiata
+con una CPU Intel\textregistered\@ Core\texttrademark\@ i7--4710HQ quad core (8
+thread) @ 2.50GHz ed una NVIDIA GeForce GTX 860M.
 
-%AMD Opteron (tm) Processor 6376 8 core 16 thread.
+La valutazione delle prestazioni per la versione CUDA è stata invece effettuata
+su una macchina equipaggiata con due processori Intel\textregistered\@
+Xeon\textregistered\@ E5--2603 v4 hexa core @ 1.70GHz e tre GPU NVIDIA GeForce
+GTX 1070.
 
 Le tempistiche indicate sono state tutte ottenute mediante le funzioni di
 libreria messe a disposizione dal docente. Per ulteriori informazioni si
@@ -12,13 +15,27 @@ consulti il codice sorgente.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.4]{./graphs/omp-timings.png}
-  \caption{Comparazione tempistiche di esecuzione in OpenMP.}\label{fig:timings1}
+  \begin{subfigure}[b]{0.49\linewidth}
+  \includegraphics[scale=0.5]{./graphs/omp-timings.png}
+  \caption{Comparazione tempistiche di esecuzione in
+  OpenMP.}\label{fig:timingsomp1}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.5\linewidth}
+  \includegraphics[scale=0.5]{./graphs/cuda-timings.png}
+  \caption{Comparazione tempistiche di esecuzione in
+  CUDA.}\label{fig:timingscuda1}
+  \end{subfigure}
+  \caption{Comparazione tempistiche.}\label{fig:timings}
 \end{figure}
 
-In figura \ref{fig:timings1} è possibile notare che il maggior guadagno si
+In figura \ref{fig:timingsomp1} è possibile notare che nell'esecuzione
+dell'algoritmo implementato con parallelismo OpenMP il maggior guadagno si
 registra nell'esecuzione in cui il dominio ha dimensione 1024 e che nelle
 esecuzioni che usano più di 8 thread si ha un incremento di tempistiche.
+
+In figura \ref{fig:timingscuda1}, invece, è possibile osservare come la versione
+CUDA vada ad abbattere drasticamente i tempi di esecuzione dell'algoritmo,
+denotando un ingente guadagno prestazionale.
 
 \subsection{Speedup}
 
@@ -87,30 +104,26 @@ tempistiche.
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[scale=0.4]{./graphs/omp-speedup.png}
-  \caption{Grafico dello speedup.}\label{fig:speedup1}
+  \includegraphics[scale=0.45]{./graphs/omp-speedup.png}
+  \caption{Grafico dello speedup della versione OpenMP.}\label{fig:speedup1}
 \end{figure}
 
-\subsection{Scalabilità forte}
+\subsection{Scalabilità}
+
+\subsubsection{Scalabilità forte}
 
 La valutazione della scalabilità forte (\textit{strong scaling}), nonché i
-risultati mostrati nel grafico \ref{fig:strong1} sono stati calcolati mediante
+risultati mostrati in figura \ref{fig:strong1} sono stati calcolati mediante
 la seguente formula:
 
 \[
     E(p) = \frac{S(p)}{p} = \frac{T_{serial}}{p \cdot T_{parallel}(p)}.
 \]
 
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[scale=0.4]{./graphs/omp-strong.png}
-  \caption{Grafico della scalabilità forte.}\label{fig:strong1}
-\end{figure}
-
-\subsection{Scalabilità debole}
+\subsubsection{Scalabilità debole}
 
 La valutazione della scalabilità debole (\textit{weak scaling}), nonché i
-risultati mostrati nel grafico \ref{fig:weak1} sono stati calcolati mediante
+risultati mostrati in figura \ref{fig:weak1} sono stati calcolati mediante
 la seguente formula:
 
 \[
@@ -118,7 +131,7 @@ W(p) = \frac{T_{1}}{T_{p}}
 \]
 
 in cui:
-\begin{table}[ht]
+\begin{table}[!ht]
 \begin{tabular}{lll}
     p &: & \# processori/core\\
     T\textsubscript{1}&: & tempo di esecuzione di una unità di lavoro con un
@@ -128,9 +141,9 @@ in cui:
 \end{tabular}
 \end{table}
 
-Poiché nella valutazione della scalabilità debole, la dimensione del problema è
-proporzionale al numero di processori/core utilizzati, il lato della matrice
-utiizzata nell'algoritmo è stato calcolato come segue:
+Poiché nella valutazione della scalabilità debole la dimensione del problema è
+proporzionale al numero di processori/core utilizzati, il lato di base della
+matrice utilizzata nell'algoritmo è stato calcolato come segue:
 
 \[
 side(p) = 256 \cdot \sqrt[3]{p}
@@ -138,15 +151,15 @@ side(p) = 256 \cdot \sqrt[3]{p}
 
 in cui 256 è la dimensione presa come lato di base.
 
-\begin{figure}[!ht]
+\begin{figure}
   \centering
-  \includegraphics[scale=0.4]{./graphs/omp-weak.png}
+  \begin{subfigure}[b]{0.49\linewidth}
+  \includegraphics[scale=0.49]{./graphs/omp-strong.png}
+  \caption{Grafico della scalabilità forte.}\label{fig:strong1}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.5\linewidth}
+  \includegraphics[scale=0.5]{./graphs/omp-weak.png}
   \caption{Grafico della scalabilità debole.}\label{fig:weak1}
+  \end{subfigure}
+  \caption{Grafici che rappresentano la scalabilità della versione OpenMP.}\label{fig:scaling}
 \end{figure}
-
-\subsection{Osservazioni}
-
-fare ancora tutta la parte cuda (tempistiche)
-
-hyperthreading
-dopo gli 8 core
