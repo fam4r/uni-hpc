@@ -65,10 +65,10 @@ make openmp
 Run simulation:
 
 ```bash
-./omp-earthquake [nsteps [n]] > graphs/data/omp-simulation.dat
+./omp-earthquake [nsteps [n]] > ./data/omp-simulation.dat
 
 # example
-./omp-earthquake 100000 256 > graphs/data/omp-simulation.dat
+./omp-earthquake 100000 256 > ./data/omp-simulation.dat
 ```
 
 Plot simulation results running `plot-simulation.py`. The graph will be located
