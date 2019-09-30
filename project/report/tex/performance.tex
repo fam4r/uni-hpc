@@ -52,10 +52,11 @@ in cui:
 \begin{table}[ht]
 \begin{tabular}{lll}
     p & : & \# processori/core\\
-    T\textsubscript{serial}& : & tempo di esecuzione della porzione seriale
+    T\textsubscript{serial}& : & tempo di esecuzione dell'algoritmo in versione
+    seriale
     (T\textsubscript{serial}=T\textsubscript{parallel}(1))\\
-    T\textsubscript{parallel}(\textit{p}) & : & tempo di esecuzione della porzione con
-    \textit{p} processori/core
+    T\textsubscript{parallel}(\textit{p}) & : & tempo di esecuzione della
+    versione parallela con \textit{p} processori/core
 \end{tabular}
 \end{table}
 
@@ -145,8 +146,8 @@ in cui:
 \end{table}
 
 Poiché nella valutazione della scalabilità debole la dimensione del problema è
-proporzionale al numero di processori/core utilizzati, il lato di base della
-matrice utilizzata nell'algoritmo è stato calcolato come segue:
+proporzionale al numero di processori/core utilizzati, il lato della matrice
+utilizzata nell'algoritmo è stato calcolato come segue:
 
 \[
 side(p) = 256 \cdot \sqrt[3]{p}
