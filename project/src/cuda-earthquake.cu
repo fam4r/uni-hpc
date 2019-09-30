@@ -158,18 +158,6 @@ __global__ void count_cells(float *grid, int n, int *c)
     const int i = HALO + blockIdx.x * blockDim.x + threadIdx.x;
     const int array_size = n * n;
 
-    /* concept
-       sono un thread (cella)
-       se mio valore > EMAX
-       scrivo 1 nella variabile
-       */
-
-    /* nelle note ho scritto che le operazioni atomiche su N grandi sono
-     * dispensiose, forse non conviene lasciarlo così, provare a fare un array
-     * grande n*n in cui in ogni cella un thread salva 1 o 0 in base a se il
-     * valore supera EMAX e poi faccio la riduzione su quell'array */
-
-    /* usare && */
     if (i < array_size) {
         if ( grid[i] > EMAX ) {
             atomicAdd(c, 1);
@@ -303,22 +291,18 @@ int main( int argc, char* argv[] )
     for (s=0; s<nsteps; s++) {
         /* L'ordine delle istruzioni che seguono e' importante */
 
-        /* increment_energy(cur, width, EDELTA); */
         /* <<<nBlocks, nThreadsPerBlock>>> */
         increment_energy<<<stepGrid, stepBlock>>>(d_cur, width, EDELTA);
         cudaDeviceSynchronize();
 
-        /* c = count_cells(cur, width); */
         /* RIDUZIONE -> thread block 1D */
         count_cells<<<reduGrid, reduBlock>>>(d_cur, width, d_c); /* kernel must return void -> changed */
         cudaDeviceSynchronize();
         cudaMemcpy(&c, d_c, count_size, cudaMemcpyDeviceToHost);
 
-        /* propagate_energy(cur, next, width); */
         propagate_energy<<<stepGrid, stepBlock>>>(d_cur, d_next, width);
         cudaDeviceSynchronize();
 
-        /* Emean = average_energy(next, width); */
         /* RIDUZIONE -> thread block 1D */
         average_energy<<<reduGrid, reduBlock>>>(d_next, width, d_Emean); /* kernel must return void -> changed */
         cudaDeviceSynchronize();

@@ -142,37 +142,7 @@ def save(column_headers, filename, data):
 save(matrix_sides, timings_filename, avg_exe_time)
 save(matrix_sides, speedup_filename, speedup)
 save(matrix_sides, strong_filename, strong_scaling)
-# save(["WEAK"], weak_filename, weak_scaling)
 
-# with open(timings_filename, mode='w') as timings_file:
-#     timings_fieldnames = ['THREAD']
-#     timings_fieldnames += matrix_sides
-#     timings_writer = csv.DictWriter(timings_file, timings_fieldnames)
-#     timings_writer.writeheader()
-#     for thread in threads:
-#         row = avg_exe_time[thread]
-#         row["THREAD"] = thread
-#         timings_writer.writerow(row)
-#
-# with open(speedup_filename, mode='w') as speedup_file:
-#     speedup_fieldnames = ['THREAD']
-#     speedup_fieldnames += matrix_sides
-#     speedup_writer = csv.DictWriter(speedup_file, speedup_fieldnames)
-#     speedup_writer.writeheader()
-#     for thread in threads:
-#         row = speedup[thread]
-#         row["THREAD"] = thread
-#         speedup_writer.writerow(row)
-#
-# with open(strong_filename, mode='w') as strong_file:
-#     strong_fieldnames = ['THREAD']
-#     strong_fieldnames += matrix_sides
-#     strong_writer = csv.DictWriter(strong_file, strong_fieldnames)
-#     strong_writer.writeheader()
-#     for thread in threads:
-#         row = strong_scaling[thread]
-#         row["THREAD"] = thread
-#         strong_writer.writerow(row)
 
 with open(weak_filename, mode='w') as weak_file:
     weak_fieldnames = ['p', 'WEAK']

@@ -12,7 +12,7 @@ quella presa in esame siano ai bordi del dominio stesso.
 Il valore delle ghost cell (zero), inoltre, non influirà sui risultati delle
 operazioni dell'algoritmo.
 
-In figura \ref{fig:ghostarea} (\cite{marzollaghost}) è possibile osservare il
+In figura \ref{fig:ghostarea} \cite{marzollaghost} è possibile osservare il
 comportamento appena descritto.
 
 \begin{figure}[!ht]
@@ -99,11 +99,11 @@ parallelizzare anche le operazioni di somma all'interno delle direttive OpenMP\@
 
 \paragraph{collapse}
 
-È stato valutato l'utilizzo della clausola \texttt{collapse(2)} sui cicli
-\texttt{for} innestati per collassare le due iterazioni in una, allargando lo
+È stato valutato l'utilizzo della clausola \texttt{collapse(2)} nei cicli
+\texttt{for} innestati per collassare due iterazioni in una, allargando lo
 spazio di iterazione come da specifiche\cite{openmp2018reference}.
 
-Tale clausola ha tuttavia causato una degradazione di prestazioni (si veda la
+Tale clausola ha tuttavia causato una degradazione delle prestazioni (si veda la
 tabella \ref{tab:collapse}) e pertanto non è stata implementata nella soluzione
 proposta.
 
@@ -120,15 +120,15 @@ senza \texttt{collapse(2)} & \multirow{2}{*}{256} & \multirow{2}{*}{100000} &
 \cmidrule[\heavyrulewidth]{2-6}
 \end{tabularx}
 \caption{\label{tab:collapse}Dati raccolti sull'esecuzione della simulazione con
-e senza la direttiva \texttt{collapse(2)}.}
+e senza la clausola \texttt{collapse(2)}.}
 \end{table}
 
 \footnotetext{of all cache refs}
 
-Dai dati presenti in tabella è possibile osservare che, al contrario di come ci
-si aspetterebbe, nonostante la clausola \texttt{collapse} modifichi i
-\textit{chunk} di memoria a cui si accede, ciò non comporta un degradamento
-significativo delle prestazioni nell'accesso alla memoria cache.
+Dai dati presenti in tabella \ref{tab:collapse} è possibile osservare che, al
+contrario di come ci si aspetterebbe, nonostante la clausola \texttt{collapse}
+modifichi i \textit{chunk} di memoria a cui si accede, ciò non comporta un
+degradamento significativo delle prestazioni nell'accesso alla memoria cache.
 
 Di conseguenza si ipotizza che l'incremento delle tempistiche di esecuzione
 possa essere legato ad una cattiva gestione da parte dello scheduler
