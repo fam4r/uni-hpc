@@ -57,6 +57,7 @@ for side in matrix_sides:
         res_file = result_dir + "/serial_res{}_{}".format(side, n_run)
         cmd = "./{} {} {} > {} 2>{}".format(exe_name, steps, side, out_file,
                                             res_file)
+        logging.info(cmd)
 
         # execute run
         os.system(cmd)
@@ -86,6 +87,7 @@ for side in matrix_sides:
         res_file = result_dir + "/cuda_res{}_{}".format(side, n_run)
         cmd = "./{} {} {} > {} 2>{}".format(exe_name, steps, side, out_file,
                                             res_file)
+        logging.info(cmd)
 
         # execute run
         os.system(cmd)

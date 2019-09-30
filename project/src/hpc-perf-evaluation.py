@@ -20,14 +20,17 @@ threads = list(2**x for x in range(0, 6))
 # run the simulation N times and take the average execution time
 total_run = 5
 
+result_dir = "./data"
+os.makedirs(result_dir, exist_ok=True)
+
 compute_weak = True
 weak_psize = 256
 
 # csv info
-timings_filename = "./data/omp-timings-py.csv"
-speedup_filename = "./data/omp-speedup-py.csv"
-strong_filename = "./data/omp-strong-py.csv"
-weak_filename = "./data/omp-weak-py.csv"
+timings_filename = result_dir + "/omp-timings-py.csv"
+speedup_filename = result_dir + "/omp-speedup-py.csv"
+strong_filename = result_dir + "/omp-strong-py.csv"
+weak_filename = result_dir + "/omp-weak-py.csv"
 
 
 def compute_weak_scaling():
@@ -41,8 +44,10 @@ def compute_weak_scaling():
             p_size_weak = round(weak_psize * (thread**(1. / 3.)), 4)
             logging.info("run #{}: L{}, {} thread".format(
                 k, p_size_weak, thread))
-            os.system("OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
-                thread, exe_name, steps, p_size_weak, out_file, res_file))
+            cmd = "OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
+                thread, exe_name, steps, p_size_weak, out_file, res_file)
+            logging.info(cmd)
+            os.system(cmd)
             with open(res_file) as f:
                 for line in f:
                     if "parallel" in line:
@@ -96,6 +101,7 @@ for thread in threads:
             res_file = "./data/res{}_{}_{}".format(side, thread, n_run)
             cmd = "OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
                 thread, exe_name, steps, side, out_file, res_file)
+            logging.info(cmd)
 
             # execute run
             os.system(cmd)
@@ -149,7 +155,7 @@ with open(weak_filename, mode='w') as weak_file:
     weak_writer = csv.DictWriter(weak_file, weak_fieldnames)
     weak_writer.writeheader()
     row = dict()
-    for thread in range(1, threads[len(threads) - 1] + 1):
+    for thread in range(1, 17):
         row["p"] = thread
         row["WEAK"] = weak_scaling[thread]
         weak_writer.writerow(row)
