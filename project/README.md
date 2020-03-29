@@ -14,7 +14,10 @@ Academic Year 2018/2019
 
 https://www.moreno.marzolla.name/teaching/high-performance-computing/2018-2019/earthquake.html
 
-> Lo scopo del progetto è di implementare versioni parallele di un semplice modello matematico di propagazione dei terremoti. Il modello che consideriamo è una estensione in due dimensioni dell’automa cellulare [Burridge-Knopoff (BK)](https://pubs.geoscienceworld.org/ssa/bssa/article-abstract/57/3/341/116471/model-and-theoretical-seismicity).
+> Lo scopo del progetto è di implementare versioni parallele di un semplice
+> modello matematico di propagazione dei terremoti. Il modello che consideriamo
+> è una estensione in due dimensioni dell’automa cellulare [Burridge-Knopoff
+> (BK)](https://pubs.geoscienceworld.org/ssa/bssa/article-abstract/57/3/341/116471/model-and-theoretical-seismicity).
 
 ## Details
 
@@ -23,6 +26,31 @@ I chose OpenMP and CUDA implementations.
 ## Report
 
 The report can be found in `./report/main.pdf`.
+
+## Errors
+
+:warning: reported errors, try to not make the same mistakes in your project :warning:
+
+- OpenMP: it is unnecessary to run tests with more threads than the number of
+    logical processors: the overhead is expected in that case and should not be
+    reported
+- the formula for the `alpha` parameter is wrong, the correct one derived from
+    the definition of Tparallel is `alpha = (p T_parallel - T_serial) / (p
+    T_serial - T_serial)` and in any case it is useful to informally demonstrate
+    Moore's law "only"; clearly it should not be considered in your report
+- a weak scaling > 1 is a nonsense, if you obtain such results you may want to
+    review the operation used to compute the matrix size, eg.
+    - given p the number of processors
+    - given N the initial matrix size
+    - given a O(n^2) algorithm
+    - the matrix size should be proportional to sqrt(p)
+- avoid the use of atomic functions (such as `atomicAdd`) in CUDA computations
+    for reduction operators: it basically leads to serial computations
+    - use shared memory to compute partial reductions for each thread block
+        instead
+    - perform atomic operations to accumulate a final result using the partial
+        ones, if necessary
+    - see http://developer.download.nvidia.com/assets/cuda/files/reduction.pdf
 
 ## Requirements
 
