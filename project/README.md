@@ -22,7 +22,7 @@ I chose OpenMP and CUDA implementations.
 
 ## Report
 
-The report can be found in `./report/report-789072.pdf`.
+The report can be found in `./report/main.pdf`.
 
 ## Requirements
 
@@ -71,12 +71,12 @@ Run simulation:
 ./omp-earthquake 100000 256 > ./data/omp-simulation.dat
 ```
 
-Plot simulation results running `plot-simulation.py`. The graph will be located
-at `graphs/omp-earthquake.png`.
+Plot simulation results running `./util/plot-simulation.py`. The graph will be
+located at `graphs/omp-earthquake.png`.
 
 ### Performance evaluation
 
-Run `hpc-perf-evaluation.py`.
+Run `./util/hpc-perf-evaluation.py`.
 
 More info [here](#performance-evaluation-script).
 
@@ -113,12 +113,12 @@ Run simulation:
 ./cuda-earthquake 100000 256 > ./data/cuda-simulation.dat
 ```
 
-Plot simulation results running `plot-timings-cuda.py`. The graph will be
+Plot simulation results running `./util/plot-timings-cuda.py`. The graph will be
 located at `graphs/cuda-timings.png`.
 
 ### Performance evaluation
 
-Run `hpc-perf-evaluation-cuda.py`.
+Run `./util/hpc-perf-evaluation-cuda.py`.
 
 More info [here](#performance-evaluation-script).
 
