@@ -8,7 +8,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # executable variables
-exe_name = "omp-earthquake"
+exe_folder = "../"
+exe_name = exe_folder + "omp-earthquake"
 steps = 100000
 matrix_sides = [256, 512, 1024]
 # matrix_sides = [256]
@@ -20,7 +21,7 @@ threads = list(2**x for x in range(0, 6))
 # run the simulation N times and take the average execution time
 total_run = 5
 
-result_dir = "./data"
+result_dir = "../data"
 os.makedirs(result_dir, exist_ok=True)
 
 compute_weak = True
@@ -39,7 +40,7 @@ def compute_weak_scaling():
         avg_exe_time = 0
         for k in range(1, total_run + 1):
             out_file = "/dev/null"
-            res_file = "./data/res_weak{}_{}".format(thread, k)
+            res_file = result_dir + "/res_weak{}_{}".format(thread, k)
             # e(l($N0 * $N0 * $N0 * $p)/3)
             p_size_weak = round(weak_psize * (thread**(1. / 3.)), 4)
             logging.info("run #{}: L{}, {} thread".format(
@@ -98,8 +99,8 @@ for thread in threads:
 
             # run variables
             out_file = "/dev/null"
-            res_file = "./data/res{}_{}_{}".format(side, thread, n_run)
-            cmd = "OMP_NUM_THREADS={} ./{} {} {} > {} 2>{}".format(
+            res_file = result_dir + "/res{}_{}_{}".format(side, thread, n_run)
+            cmd = "OMP_NUM_THREADS={} {} {} {} > {} 2>{}".format(
                 thread, exe_name, steps, side, out_file, res_file)
             logging.info(cmd)
 

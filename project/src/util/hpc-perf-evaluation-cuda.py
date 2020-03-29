@@ -8,7 +8,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # executable variables
-exe_name = "earthquake"
+exe_folder = "../"
+exe_name = exe_folder + "earthquake"
 steps = 100000
 matrix_sides = [256, 512, 1024]
 # matrix_sides = [256]
@@ -16,7 +17,7 @@ matrix_sides = [256, 512, 1024]
 # run the simulation N times and take the average execution time
 total_run = 5
 
-result_dir = "./data"
+result_dir = "../data"
 os.makedirs(result_dir, exist_ok=True)
 
 # csv info
@@ -75,7 +76,7 @@ for side in matrix_sides:
 logging.info("####################### SAVING TO FILE ########################")
 save(matrix_sides, serial_timings_filename, avg_exe_time)
 
-exe_name = "cuda-earthquake"
+exe_name = exe_folder + "cuda-earthquake"
 logging.info("################## CUDA TIMINGS ###################")
 for side in matrix_sides:
     avg_exe_time[side] = 0
